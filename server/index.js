@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
@@ -25,8 +27,36 @@ app.get("/", (req, res) => {
   res.send("SkillSphere AI Server Running");
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5002;
 
-app.listen(PORT, () => {
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+
+// Socket Connection
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // Join post room
+  socket.on("joinPost", (postId) => {
+    socket.join(postId);
+  });
+
+  // Realtime comment event
+  socket.on("sendComment", (data) => {
+    io.to(data.postId).emit("receiveComment", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
