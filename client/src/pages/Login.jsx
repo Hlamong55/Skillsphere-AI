@@ -37,14 +37,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-md w-100 space-y-4"
+        className="bg-white backdrop-blur-lg border border-purple-200 p-8 rounded-2xl shadow-3xl w-100 space-y-4"
       >
-        <h2 className="text-3xl font-bold text-center">
-          Login
-        </h2>
+        <h2 className="text-3xl font-bold text-center">Login</h2>
 
         <input
           type="email"
@@ -63,7 +60,8 @@ const Login = () => {
         />
 
         <button
-          className="w-full bg-black text-white py-3 rounded hover:bg-gray-800"
+          className="w-full bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105 transition-all duration-300 text-white px-6 py-3 rounded-xl shadow-lg font-semibold
+        "
         >
           Login
         </button>

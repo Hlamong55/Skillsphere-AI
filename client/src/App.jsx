@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Navbar from "./components/Navbar";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -7,15 +9,27 @@ import Register from "./pages/Register";
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
 
-        <Route path="/" element={<Home />} />
+      <div
+        className="
+          min-h-screen
+          bg-gradient-to-br
+          from-slate-100
+          via-indigo-50
+          to-purple-100
+        "
+      >
+        <Navbar />
 
-        <Route path="/login" element={<Login />} />
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
 
-      </Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </div>
+
     </BrowserRouter>
   );
 }
