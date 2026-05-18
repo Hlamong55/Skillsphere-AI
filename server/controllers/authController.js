@@ -2,7 +2,6 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 
-
 // Register
 const registerUser = async (req, res) => {
   try {
@@ -34,7 +33,16 @@ const registerUser = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       token: generateToken(user._id),
-      user,
+      user: {
+        _id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        profilePicture: user.profilePicture,
+        bio: user.bio,
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -42,7 +50,6 @@ const registerUser = async (req, res) => {
     });
   }
 };
-
 
 // Login
 const loginUser = async (req, res) => {
@@ -70,7 +77,16 @@ const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       token: generateToken(user._id),
-      user,
+      user: {
+        _id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+        profilePicture: user.profilePicture,
+        bio: user.bio,
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -78,7 +94,6 @@ const loginUser = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   registerUser,
