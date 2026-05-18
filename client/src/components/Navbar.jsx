@@ -1,12 +1,16 @@
 import { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { AuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
+
   const { user, logout } = useContext(AuthContext);
 
   const navigate = useNavigate();
+
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -17,26 +21,33 @@ const Navbar = () => {
   return (
     <nav
       className="
-        bg-white/10
-        backdrop-blur-xl
-        border-b border-white/20
         sticky top-0 z-50
+        border-b border-white/10
+        bg-black/20
+        backdrop-blur-2xl
       "
     >
       <div
         className="
           max-w-7xl mx-auto
-          px-6 py-4
+          p-6
           flex items-center justify-between
         "
       >
+
         {/* Logo */}
         <Link
           to="/"
           className="
-            text-3xl font-black
-            bg-gradient-to-r from-indigo-500 to-purple-500
-            bg-clip-text text-transparent
+            text-4xl
+            font-black
+            tracking-tight
+            bg-gradient-to-r
+            from-indigo-400
+            via-purple-400
+            to-pink-400
+            bg-clip-text
+            text-transparent
             hover:scale-105
             transition-all duration-300
           "
@@ -44,74 +55,140 @@ const Navbar = () => {
           SkillSphere AI
         </Link>
 
-        {/* Right Side */}
+        {/* Right */}
         <div className="flex items-center gap-4">
+
           {user ? (
             <>
-              <span
+
+              {/* Feed */}
+              <Link
+                to="/feed"
+                className={`
+                  px-5 py-2
+                  rounded-xl
+                  font-semibold
+                  transition-all duration-300
+                  hover:scale-105
+
+                  ${
+                    location.pathname === "/feed"
+                      ? `
+                        bg-gradient-to-r
+                        from-indigo-500
+                        to-purple-500
+                        text-white
+                        shadow-lg shadow-indigo-500/30
+                      `
+                      : `
+                        text-gray-300
+                        hover:text-white
+                        hover:bg-white/10
+                      `
+                  }
+                `}
+              >
+                Feed
+              </Link>
+
+              {/* User */}
+              <div
                 className="
-                  text-gray-700 font-semibold
-                  hidden md:block
+                  hidden md:flex
+                  items-center gap-3
+                  px-4 py-2
+                  rounded-2xl
+                  bg-white/5
+                  border border-white/10
                 "
               >
-                {user.user.name}
-              </span>
 
+                <div
+                  className="
+                    w-10 h-10
+                    rounded-full
+                    bg-gradient-to-r
+                    from-indigo-500
+                    to-purple-500
+                  "
+                />
+
+                <span
+                  className="
+                    text-gray-200
+                    font-semibold
+                  "
+                >
+                  {user.user.name}
+                </span>
+
+              </div>
+
+              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="
-                  bg-gradient-to-r from-red-500 to-pink-500
-                  hover:from-red-600 hover:to-pink-600
+                  bg-red-500/20
+                  border border-red-500/30
+                  hover:bg-red-500
+                  hover:text-white
                   hover:scale-105
                   transition-all duration-300
-                  text-white
+                  text-red-300
                   px-5 py-2
                   rounded-xl
-                  shadow-lg
                   font-semibold
                 "
               >
                 Logout
               </button>
+
             </>
           ) : (
             <>
+
+              {/* Login */}
               <Link
                 to="/login"
                 className="
-                  bg-gradient-to-r from-indigo-500 to-purple-500
-                  hover:from-indigo-600 hover:to-purple-600
+                  bg-gradient-to-r
+                  from-indigo-500
+                  to-purple-500
                   hover:scale-105
                   transition-all duration-300
                   text-white
-                  px-5 py-2
+                  px-6 py-2
                   rounded-xl
-                  shadow-lg
+                  shadow-lg shadow-indigo-500/30
                   font-semibold
                 "
               >
                 Login
               </Link>
 
+              {/* Register */}
               <Link
                 to="/register"
                 className="
-                  border border-indigo-500
-                  text-indigo-600
-                  hover:bg-indigo-500
-                  hover:text-white
+                  border border-white/10
+                  bg-white/5
+                  hover:bg-white/10
                   hover:scale-105
                   transition-all duration-300
-                  px-5 py-2
+                  text-gray-200
+                  px-6 py-2
                   rounded-xl
                   font-semibold
                 "
               >
                 Register
               </Link>
+
             </>
           )}
+
         </div>
+
       </div>
     </nav>
   );

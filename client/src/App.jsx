@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Feed from "./pages/Feed";
 
 function App() {
   return (
@@ -13,10 +14,9 @@ function App() {
       <div
         className="
           min-h-screen
-          bg-gradient-to-br
-          from-slate-100
-          via-indigo-50
-          to-purple-100
+          bg-[#0B1120]
+          text-white
+          overflow-hidden
         "
       >
         <Navbar />
@@ -27,6 +27,8 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/register" element={<Register />} />
+
+          <Route path="/feed" element={<Feed />} />
         </Routes>
       </div>
 
