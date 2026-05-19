@@ -1,18 +1,9 @@
 import { useState, useContext } from "react";
-
 import { Link, useNavigate } from "react-router-dom";
-
-import {
-  FiUser,
-  FiMail,
-  FiLock,
-  FiPhone,
-} from "react-icons/fi";
-
+import {FiUser, FiMail, FiLock, FiPhone} from "react-icons/fi";
 import { BsStars } from "react-icons/bs";
 
 import api from "../services/api";
-
 import { AuthContext } from "../context/AuthContext";
 
 const Register = () => {
@@ -46,7 +37,6 @@ const Register = () => {
       );
 
       login(data);
-
       navigate("/feed");
 
     } catch (error) {
@@ -56,85 +46,36 @@ const Register = () => {
 
   return (
     <div
-      className="
-        min-h-screen
-        bg-[#0B1120]
-        relative
-        overflow-hidden
-        flex items-center justify-center
-        px-6 py-12
-      "
+      className="min-h-screen bg-[#0B1120] relative overflow-hidden flex items-center justify-center px-6 py-10"
     >
 
       {/* Glow Effects */}
       <div
-        className="
-          absolute
-          top-[-200px]
-          right-[-100px]
-          w-[500px]
-          h-[500px]
-          bg-purple-600/30
-          blur-[140px]
-          rounded-full
-        "
+        className="absolute -top-50 -right-25 w-125 h-125 bg-purple-600/30 blur-[140px] rounded-full"
       />
 
       <div
-        className="
-          absolute
-          bottom-[-200px]
-          left-[-100px]
-          w-[500px]
-          h-[500px]
-          bg-indigo-600/30
-          blur-[140px]
-          rounded-full
-        "
+        className="absolute -bottom-50 -left-25 w-125 h-125 bg-indigo-600/30 blur-[140px] rounded-full"
       />
 
       {/* Main */}
       <div
-        className="
-          relative z-10
-          w-full
-          max-w-6xl
-
-          grid
-          lg:grid-cols-2
-          gap-10
-          items-center
-        "
+        className="relative z-10 w-full max-w-6xl grid lg:grid-cols-2 gap-10 items-center"
       >
 
         {/* Left Side */}
         <div className="hidden lg:block">
 
           <div
-            className="
-              inline-flex
-              items-center gap-2
-              bg-white/5
-              border border-white/10
-              backdrop-blur-xl
-              px-4 py-2
-              rounded-full
-              text-indigo-300
-              mb-8
-            "
+            className="inline-flex items-center gap-2 bg-white/10 border border-white/10 backdrop-blur-xl px-4 py-2.5 rounded-full text-indigo-300 mb-5"
           >
-            <BsStars />
+            <BsStars className="text-yellow-300 text-lg" />
 
             Join The Future of Learning
           </div>
 
           <h1
-            className="
-              text-6xl
-              font-black
-              leading-tight
-              text-white
-            "
+            className="text-6xl font-black leading-tight text-white"
           >
             Build.
             <br />
@@ -146,13 +87,7 @@ const Register = () => {
           </h1>
 
           <p
-            className="
-              text-gray-400
-              text-lg
-              leading-relaxed
-              mt-8
-              max-w-xl
-            "
+            className="text-gray-400 text-lg leading-relaxed mt-8 max-w-xl"
           >
             SkillSphere AI connects developers,
             learners and innovators through
@@ -177,19 +112,12 @@ const Register = () => {
               >
 
                 <div
-                  className="
-                    w-3 h-3
-                    rounded-full
-                    bg-gradient-to-r
-                    from-indigo-500
-                    to-purple-500
-                  "
+                  className="w-3 h-3 rounded-full bg-linear-to-r from-indigo-500 to-purple-500"
                 />
 
                 <p className="text-gray-300">
                   {item}
                 </p>
-
               </div>
 
             ))}
@@ -200,26 +128,14 @@ const Register = () => {
 
         {/* Register Card */}
         <div
-          className="
-            bg-white/5
-            border border-white/10
-            backdrop-blur-2xl
-            rounded-3xl
-            p-8 md:p-10
-            shadow-2xl
-          "
+          className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-3xl p-8 md:p-8 shadow-2xl"
         >
 
           {/* Header */}
           <div className="mb-8">
 
             <h2
-              className="
-                text-4xl
-                font-black
-                text-white
-                mb-3
-              "
+              className="text-4xl font-black text-white mb-3"
             >
               Create Account
             </h2>
@@ -240,43 +156,23 @@ const Register = () => {
             <div>
 
               <label
-                className="
-                  text-gray-300
-                  text-sm
-                  mb-2
-                  block
-                "
+                className="text-gray-400 text-sm mb-2 block"
               >
                 Full Name
               </label>
 
               <div
-                className="
-                  flex items-center gap-3
-                  bg-[#111827]
-                  border border-white/10
-                  focus-within:border-indigo-500
-                  rounded-2xl
-                  px-4
-                  transition-all duration-300
-                "
+                className="flex items-center gap-3 bg-[#111827] border border-white/20 focus-within:border-indigo-500 rounded-2xl pl-4 transition-all duration-300"
               >
 
-                <FiUser className="text-gray-500 text-lg" />
+                <FiUser size={20} className="text-gray-400 text-lg" />
 
                 <input
                   type="text"
                   name="name"
                   placeholder="Enter your full name"
                   onChange={handleChange}
-                  className="
-                    w-full
-                    bg-transparent
-                    py-4
-                    text-white
-                    placeholder:text-gray-500
-                    outline-none
-                  "
+                  className="w-full bg-transparent pl-2 py-3.5 rounded-2xl text-white placeholder:text-gray-500 outline-none"
                 />
 
               </div>
@@ -287,42 +183,23 @@ const Register = () => {
             <div>
 
               <label
-                className="
-                  text-gray-300
-                  text-sm
-                  mb-2
-                  block
-                "
+                className="text-gray-300 text-sm mb-2 block"
               >
                 Username
               </label>
 
               <div
-                className="
-                  flex items-center gap-3
-                  bg-[#111827]
-                  border border-white/10
-                  focus-within:border-indigo-500
-                  rounded-2xl
-                  px-4
-                  transition-all duration-300
-                "
+                className="flex items-center gap-3 bg-[#111827] border border-white/20 focus-within:border-indigo-500 rounded-2xl pl-4 transition-all duration-300"
               >
 
-                <FiUser className="text-gray-500 text-lg" />
+                <FiUser size={20} className="text-gray-400 text-lg" />
 
                 <input
                   type="text"
                   name="username"
                   placeholder="Choose a username"
                   onChange={handleChange}
-                  className="
-                    w-full
-                    bg-transparent
-                    py-4
-                    text-white
-                    placeholder:text-gray-500
-                    outline-none
+                  className="w-full bg-transparent pl-2 py-3.5 rounded-2xl text-white placeholder:text-gray-500 outline-none
                   "
                 />
 
@@ -334,43 +211,23 @@ const Register = () => {
             <div>
 
               <label
-                className="
-                  text-gray-300
-                  text-sm
-                  mb-2
-                  block
-                "
+                className="text-gray-300 text-sm mb-2 block"
               >
                 Email Address
               </label>
 
               <div
-                className="
-                  flex items-center gap-3
-                  bg-[#111827]
-                  border border-white/10
-                  focus-within:border-indigo-500
-                  rounded-2xl
-                  px-4
-                  transition-all duration-300
-                "
+                className="flex items-center gap-3 bg-[#111827] border border-white/20 focus-within:border-indigo-500 rounded-2xl pl-4 transition-all duration-300"
               >
 
-                <FiMail className="text-gray-500 text-lg" />
+                <FiMail size={20} className="text-gray-400 text-lg" />
 
                 <input
                   type="email"
                   name="email"
                   placeholder="Enter your email"
                   onChange={handleChange}
-                  className="
-                    w-full
-                    bg-transparent
-                    py-4
-                    text-white
-                    placeholder:text-gray-500
-                    outline-none
-                  "
+                  className="w-full bg-transparent pl-2 py-3.5 rounded-2xl text-white placeholder:text-gray-500 outline-none"
                 />
 
               </div>
@@ -381,45 +238,24 @@ const Register = () => {
             <div>
 
               <label
-                className="
-                  text-gray-300
-                  text-sm
-                  mb-2
-                  block
-                "
+                className="text-gray-300 text-sm mb-2 block"
               >
                 Phone Number
               </label>
 
               <div
-                className="
-                  flex items-center gap-3
-                  bg-[#111827]
-                  border border-white/10
-                  focus-within:border-indigo-500
-                  rounded-2xl
-                  px-4
-                  transition-all duration-300
-                "
+                className="flex items-center gap-3 bg-[#111827] border border-white/20 focus-within:border-indigo-500 rounded-2xl pl-4 transition-all duration-300"
               >
 
-                <FiPhone className="text-gray-500 text-lg" />
+                <FiPhone size={20} className="text-gray-400 text-lg" />
 
                 <input
                   type="text"
                   name="phone"
                   placeholder="Enter your phone number"
                   onChange={handleChange}
-                  className="
-                    w-full
-                    bg-transparent
-                    py-4
-                    text-white
-                    placeholder:text-gray-500
-                    outline-none
-                  "
+                  className="w-full bg-transparent pl-2 py-3.5 rounded-2xl text-white placeholder:text-gray-500 outline-none"
                 />
-
               </div>
 
             </div>
@@ -428,74 +264,30 @@ const Register = () => {
             <div>
 
               <label
-                className="
-                  text-gray-300
-                  text-sm
-                  mb-2
-                  block
-                "
+                className="text-gray-300 text-sm mb-2 block"
               >
                 Password
               </label>
 
               <div
-                className="
-                  flex items-center gap-3
-                  bg-[#111827]
-                  border border-white/10
-                  focus-within:border-indigo-500
-                  rounded-2xl
-                  px-4
-                  transition-all duration-300
-                "
+                className="flex items-center gap-3 bg-[#111827] border border-white/20 focus-within:border-indigo-500 rounded-2xl pl-4 transition-all duration-300"
               >
 
-                <FiLock className="text-gray-500 text-lg" />
-
+                <FiLock size={20} className="text-gray-400 text-lg" />
                 <input
                   type="password"
                   name="password"
                   placeholder="Create password"
                   onChange={handleChange}
-                  className="
-                    w-full
-                    bg-transparent
-                    py-4
-                    text-white
-                    placeholder:text-gray-500
-                    outline-none
-                  "
+                  className="w-full bg-transparent pl-2 py-3.5 rounded-2xl text-white placeholder:text-gray-500  outline-none"
                 />
-
               </div>
 
             </div>
 
             {/* Button */}
             <button
-              className="
-                w-full
-                bg-gradient-to-r
-                from-indigo-500
-                to-purple-500
-
-                hover:from-indigo-600
-                hover:to-purple-600
-
-                hover:scale-[1.02]
-
-                transition-all duration-300
-
-                text-white
-                py-4
-                rounded-2xl
-
-                font-bold
-                text-lg
-
-                shadow-lg
-                shadow-indigo-500/20
-              "
+              className="w-full mt-3 bg-linear-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 hover:scale-[1.02] transition-all duration-300 text-white py-3.5 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/20"
             >
               Create Account
             </button>
@@ -504,22 +296,12 @@ const Register = () => {
 
           {/* Footer */}
           <p
-            className="
-              text-gray-400
-              text-center
-              mt-8
-            "
-          >
+            className="text-gray-400 text-center mt-4">
             Already have an account?{" "}
 
             <Link
               to="/login"
-              className="
-                text-indigo-400
-                hover:text-purple-400
-                transition-all duration-300
-                font-semibold
-              "
+              className="text-indigo-400 hover:text-purple-400 transition-all duration-300 font-semibold"
             >
               Login
             </Link>
