@@ -1,15 +1,22 @@
-import Feed from "../Feed";
+import CreatePost from "./CreatePost";
+
+import PostCard from "./PostCard";
 
 const FeedCenter = () => {
   return (
     <div
       className="
-        max-w-[720px]
+        max-w-180
         mx-auto
         space-y-5
       "
     >
-      <Feed />
+
+      <CreatePost />
+
+      {/* Posts */}
+      <PostCard />
+
     </div>
   );
 };

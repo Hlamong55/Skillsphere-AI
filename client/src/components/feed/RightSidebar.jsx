@@ -91,7 +91,7 @@ const RightSidebar = () => {
               className="
                 w-12 h-12
                 rounded-full
-                bg-gradient-to-r
+                bg-linear-to-r
                 from-indigo-500
                 to-purple-500
               "

@@ -2,10 +2,9 @@ import { useContext } from "react";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 
 const Navbar = () => {
-
   const { user, logout } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -34,7 +33,6 @@ const Navbar = () => {
           flex items-center justify-between
         "
       >
-
         {/* Logo */}
         <Link
           to="/"
@@ -42,7 +40,7 @@ const Navbar = () => {
             text-4xl
             font-black
             tracking-tight
-            bg-gradient-to-r
+            bg-linear-to-r
             from-indigo-400
             via-purple-400
             to-pink-400
@@ -57,10 +55,8 @@ const Navbar = () => {
 
         {/* Right */}
         <div className="flex items-center gap-4">
-
           {user ? (
             <>
-
               {/* Feed */}
               <Link
                 to="/feed"
@@ -74,7 +70,7 @@ const Navbar = () => {
                   ${
                     location.pathname === "/feed"
                       ? `
-                        bg-gradient-to-r
+                        bg-linear-to-r
                         from-indigo-500
                         to-purple-500
                         text-white
@@ -102,12 +98,11 @@ const Navbar = () => {
                   border border-white/10
                 "
               >
-
                 <div
                   className="
                     w-10 h-10
                     rounded-full
-                    bg-gradient-to-r
+                    bg-linear-to-r
                     from-indigo-500
                     to-purple-500
                   "
@@ -121,7 +116,6 @@ const Navbar = () => {
                 >
                   {user.user.name}
                 </span>
-
               </div>
 
               {/* Logout */}
@@ -142,16 +136,14 @@ const Navbar = () => {
               >
                 Logout
               </button>
-
             </>
           ) : (
             <>
-
               {/* Login */}
               <Link
                 to="/login"
                 className="
-                  bg-gradient-to-r
+                  bg-linear-to-r
                   from-indigo-500
                   to-purple-500
                   hover:scale-105
@@ -183,12 +175,9 @@ const Navbar = () => {
               >
                 Register
               </Link>
-
             </>
           )}
-
         </div>
-
       </div>
     </nav>
   );

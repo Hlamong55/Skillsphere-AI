@@ -26,7 +26,7 @@ const LeftSidebar = () => {
             className="
               w-14 h-14
               rounded-full
-              bg-gradient-to-r
+              bg-linear-to-r
               from-indigo-500
               to-purple-500
             "
@@ -95,7 +95,7 @@ const LeftSidebar = () => {
       {/* AI Box */}
       <div
         className="
-          bg-gradient-to-br
+          bg-linear-to-br
           from-indigo-500/20
           to-purple-500/20
           border border-indigo-500/20

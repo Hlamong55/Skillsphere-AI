@@ -16,7 +16,7 @@ const Feed = () => {
 
       <div
         className="
-          max-w-[1450px]
+          max-w-362
           mx-auto
           px-5
           py-8
