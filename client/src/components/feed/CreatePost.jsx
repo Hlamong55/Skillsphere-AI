@@ -1,198 +1,142 @@
 import { useState } from "react";
+import { FiImage, FiVideo, FiX } from "react-icons/fi";
+import toast from "react-hot-toast";
+import api from "../../services/api";
 
-import axios from "axios";
-
-const CreatePost = () => {
+const CreatePost = ({ fetchPosts }) => {
   const [content, setContent] = useState("");
 
-  const [image, setImage] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
 
-  const [video, setVideo] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [showMedia, setShowMedia] = useState(false);
+  // Image Preview
+  const handleImage = (e) => {
+    const file = e.target.files[0];
 
+    if (!file) return;
+
+    const imageUrl = URL.createObjectURL(file);
+
+    setImagePreview(imageUrl);
+  };
+
+  // Create Post
   const handleCreatePost = async () => {
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      return toast.error("Write something first");
+    }
 
     try {
-      await axios.post("http://localhost:5001/api/posts", {
+      setLoading(true);
+
+      await api.post("/posts", {
         content,
-        image,
-        video,
+        image: imagePreview,
       });
 
+      toast.success("Post created successfully");
+
       setContent("");
-      setImage("");
-      setVideo("");
-      setShowMedia(false);
+      setImagePreview("");
 
-      window.location.reload();
-
+      fetchPosts();
     } catch (error) {
-      console.log(error);
+      toast.error(error.response?.data?.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div
-      className="
-        bg-white/5
-        border border-white/10
-        backdrop-blur-xl
-        rounded-3xl
-        p-5
-      "
+      className="bg-white/3  border  border-white/10  backdrop-blur-2xl  rounded-2xl  p-4  shadow-[0_10px_60px_rgba(0,0,0,0.45)]"
     >
-
       {/* Top */}
-      <div className="flex gap-4">
-
+      <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="w-12 ">
-            <img
-              src={ "https://i.pravatar.cc/100?img=2"}
-              alt="user"
-              className="rounded-full"
-            />
-          </div>
+        <div
+          className="w-12 h-12 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 shrink-0"
+        />
 
-        {/* Input */}
-        <div className="flex-1">
-
+        {/* Input Area */}
+        <div className="flex-1 space-y-1">
           <textarea
-            rows={3}
-            placeholder="Share something with the community..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="
-              w-full
-              bg-[#0F172A]
-              border border-white/10
-              rounded-2xl
-              px-5 py-4
-              text-white
-              placeholder:text-gray-500
-              resize-none
-              outline-none
-              focus:border-indigo-500
-              transition-all duration-300
-            "
+            placeholder="Share your ideas with the AI community..."
+            rows={5}
+            className="w-full  bg-[#0B1120]  border  border-white/10  rounded-3xl  p-3  text-white   placeholder:text-gray-500  resize-none  outline-none   focus:border-indigo-500  transition-all  duration-300"
           />
 
-          {/* Media Inputs */}
-          {showMedia && (
-            <div className="mt-4 space-y-3">
-
-              <input
-                type="text"
-                placeholder="Image URL..."
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                className="
-                  w-full
-                  bg-[#0F172A]
-                  border border-white/10
-                  rounded-xl
-                  px-4 py-3
-                  text-white
-                  placeholder:text-gray-500
-                  outline-none
-                  focus:border-indigo-500
-                "
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt=""
+                className="w-full  max-h-112  object-cover  rounded-3xl  border  border-white/10"
               />
 
-              <input
-                type="text"
-                placeholder="Video URL..."
-                value={video}
-                onChange={(e) => setVideo(e.target.value)}
+              <button
+                onClick={() => setImagePreview("")}
                 className="
-                  w-full
-                  bg-[#0F172A]
-                  border border-white/10
-                  rounded-xl
-                  px-4 py-3
+                  absolute top-4 right-4
+                  bg-black/60
+                  hover:bg-red-500
+                  transition-all duration-300
+                  p-3
+                  rounded-full
                   text-white
-                  placeholder:text-gray-500
-                  outline-none
-                  focus:border-indigo-500
                 "
-              />
-
+              >
+                <FiX />
+              </button>
             </div>
           )}
 
+          {/* Bottom */}
+          <div className="flex items-center justify-between">
+            {/* Actions */}
+            <div className="flex items-center gap-4">
+              {/* Image Upload */}
+              <label
+                className="flex items-center gap-2  bg-white/4  hover:bg-white/8  border  border-white/10  px-2.5 py-1 rounded-xl  cursor-pointer  transition-all  duration-300  text-gray-300  hover:text-white"
+              >
+                <FiImage size={18} />
+
+                <span>Image</span>
+
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImage}
+                />
+              </label>
+
+              {/* Video Button */}
+              <button
+                className="flex  items-center  gap-2  bg-white/4  hover:bg-white/8  border  border-white/10  px-2.5  py-1  rounded-xl  transition-all  duration-300  text-gray-300  hover:text-white"
+              >
+                <FiVideo size={18} />
+
+                <span>Video</span>
+              </button>
+            </div>
+
+            {/* Create Button */}
+            <button
+              onClick={handleCreatePost}
+              disabled={loading}
+              className="bg-linear-to-r  from-indigo-500   to-purple-500  hover:from-indigo-600  hover:to-purple-600  hover:scale-105  transition-all duration-300  px-4 py-2  rounded-xl  font-bold  text-white  shadow-[0_0_35px_rgba(139,92,246,0.35)]   disabled:opacity-50
+              "
+            >
+              {loading ? "Posting..." : "Create Post"}
+            </button>
+          </div>
         </div>
-
       </div>
-
-      {/* Bottom Actions */}
-      <div
-        className="
-          flex items-center justify-between
-          mt-5
-          pl-16
-        "
-      >
-
-        {/* Left Actions */}
-        <div className="flex items-center gap-3">
-
-          <button
-            onClick={() => setShowMedia(!showMedia)}
-            className="
-              bg-white/5
-              hover:bg-white/10
-              border border-white/10
-              transition-all duration-300
-              px-3 py-1.5
-              rounded-xl
-              text-sm
-              text-gray-300
-              hover:text-white
-            "
-          >
-            <span className="text-lg font-semibold">+</span> Media
-          </button>
-
-          <button
-            className="
-              bg-white/5
-              hover:bg-white/10
-              border border-white/10
-              transition-all duration-300
-              px-2.5 py-2
-              rounded-xl
-              text-sm
-              text-gray-300
-              hover:text-white
-            "
-          >
-           ⚡ AI Tag
-          </button>
-
-        </div>
-
-        {/* Post Button */}
-        <button
-          onClick={handleCreatePost}
-          className="
-            bg-linear-to-r
-            from-indigo-500
-            to-purple-500
-            hover:scale-105
-            transition-all duration-300
-            px-6 py-3
-            rounded-xl
-            font-semibold
-            shadow-lg shadow-indigo-500/20
-          "
-        >
-          Create Post
-        </button>
-
-      </div>
-
     </div>
   );
 };
