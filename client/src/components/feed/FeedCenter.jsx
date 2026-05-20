@@ -8,6 +8,10 @@ import PostCard from "./PostCard";
 const FeedCenter = () => {
   const [posts, setPosts] = useState([]);
 
+  const [loading, setLoading] =
+    useState(true);
+
+  // FETCH POSTS
   const fetchPosts = async () => {
     try {
       const { data } = await api.get("/posts");
@@ -15,23 +19,57 @@ const FeedCenter = () => {
       setPosts(data.posts);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPosts();
+    const loadPosts = async () => {
+      await fetchPosts();
+    };
+
+    loadPosts();
   }, []);
 
-  return (
-    <div className="space-y-8">
-      <CreatePost fetchPosts={fetchPosts} />
+  // ADD NEW POST INSTANTLY
+  const addNewPost = (newPost) => {
+    setPosts((prev) => [
+      newPost,
+      ...prev,
+    ]);
+  };
 
-      {posts.map((post) => (
-        <PostCard
-          key={post._id}
-          post={post}
-        />
-      ))}
+  return (
+    <div className="space-y-6">
+      <CreatePost
+        addNewPost={addNewPost}
+      />
+
+      {/* LOADING */}
+      {loading ? (
+        <div className="space-y-5">
+          {[1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="
+                h-60
+                rounded-2xl
+                border border-white/10
+                bg-white/[0.03]
+                animate-pulse
+              "
+            />
+          ))}
+        </div>
+      ) : (
+        posts.map((post) => (
+          <PostCard
+            key={post._id}
+            post={post}
+          />
+        ))
+      )}
     </div>
   );
 };

@@ -11,14 +11,14 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <App />
 
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           style: {
             background: "#111827",
             color: "#fff",
-            border: "1px solid rgba(255,255,255,0.08)",
-            padding: "16px",
-            borderRadius: "16px",
+            border: "2px solid rgba(255,255,255,0.08)",
+            padding: "18px",
+            borderRadius: "12px",
           },
 
           success: {
