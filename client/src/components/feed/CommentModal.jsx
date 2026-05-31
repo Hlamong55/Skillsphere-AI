@@ -7,66 +7,125 @@ import {
 } from "react-icons/fi";
 
 import api from "../../services/api";
+import socket from "../../socket/socket";
 
 const CommentModal = ({
   post,
   isOpen,
   onClose,
 }) => {
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] =
+    useState([]);
 
-  const [text, setText] = useState("");
+  const [text, setText] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
-  // FETCH COMMENTS
-  const fetchComments = async () => {
-    try {
-      const { data } = await api.get(
-        `/comments/${post._id}`
-      );
-
-      setComments(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  // LOAD COMMENTS
   useEffect(() => {
-    if (isOpen && post?._id) {
-      fetchComments();
-    }
-  }, [isOpen, post]);
+    if (!isOpen || !post?._id) return;
+
+    const loadComments = async () => {
+      try {
+        const { data } = await api.get(
+          `/comments/${post._id}`
+        );
+
+        setComments(data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    loadComments();
+  }, [isOpen, post?._id]);
+
+  // REALTIME SOCKET
+  useEffect(() => {
+    if (!post?._id) return;
+
+    socket.emit(
+      "joinPost",
+      post._id
+    );
+
+    const handleReceiveComment = (
+      newComment
+    ) => {
+      setComments((prev) => {
+        const exists = prev.find(
+          (comment) =>
+            comment._id ===
+            newComment._id
+        );
+
+        if (exists) return prev;
+
+        return [
+          ...prev,
+          newComment,
+        ];
+      });
+    };
+
+    socket.on(
+      "receiveComment",
+      handleReceiveComment
+    );
+
+    return () => {
+      socket.off(
+        "receiveComment",
+        handleReceiveComment
+      );
+    };
+  }, [post?._id]);
 
   // ADD COMMENT
-  const handleComment = async () => {
-    if (!text.trim()) return;
+  const handleComment =
+    async () => {
+      if (
+        !text.trim() ||
+        loading
+      )
+        return;
 
-    try {
-      setLoading(true);
+      try {
+        setLoading(true);
 
-      const { data } = await api.post(
-        `/comments/${post._id}`,
-        {
-          text,
-        }
-      );
+        const { data } =
+          await api.post(
+            `/comments/${post._id}`,
+            {
+              text,
+            }
+          );
 
-      setComments((prev) => [...prev, data]);
+        socket.emit(
+          "sendComment",
+          {
+            postId: post._id,
+            comment: data,
+          }
+        );
 
-      setText("");
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setText("");
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // ENTER TO SEND
+  // ENTER SEND
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey
+    ) {
       e.preventDefault();
-
       handleComment();
     }
   };
@@ -77,41 +136,61 @@ const CommentModal = ({
     <div
       className="
         fixed inset-0
-        bg-black/70
-        backdrop-blur-sm
         z-50
+
         flex items-center justify-center
-        p-3
+
+        bg-black/70
+        backdrop-blur-md
+
+        p-4
       "
     >
-      {/* MODAL */}
       <div
         className="
-          w-full max-w-2xl
-          h-[82vh]
+          w-full
+          max-w-xl
+
+          h-[70vh]
+
           bg-[#0B1120]
-          border border-white/10
-          rounded-2xl
+
+          border
+          border-white/10
+
+          rounded-xl
+
           overflow-hidden
-          shadow-2xl
+
+          shadow-[0_20px_80px_rgba(0,0,0,0.6)]
+
           flex flex-col
         "
       >
         {/* HEADER */}
         <div
           className="
-            px-4 py-3
-            border-b border-white/20
             flex items-center justify-between
+
+            px-5 py-4
+
+            border-b
+            border-white/10
           "
         >
           <div className="flex items-center gap-3">
             <FiMessageCircle
+              size={22}
               className="text-indigo-400"
-              size={24}
             />
 
-            <h2 className="text-2xl font-bold text-white">
+            <h2
+              className="
+                text-lg
+                font-semibold
+                text-white
+              "
+            >
               Comments
             </h2>
           </div>
@@ -124,19 +203,29 @@ const CommentModal = ({
               transition-all duration-300
             "
           >
-            <FiX size={26} />
+            <FiX size={22} />
           </button>
         </div>
 
         {/* COMMENTS */}
         <div
-          className="flex-1  overflow-y-auto  px-6 "
+          className="
+            flex-1
+
+            overflow-y-auto
+
+            px-4
+            py-2
+          "
         >
-          {comments.length === 0 ? (
+          {comments.length ===
+          0 ? (
             <div
               className="
                 h-full
+
                 flex items-center justify-center
+
                 text-gray-500
               "
             >
@@ -144,62 +233,89 @@ const CommentModal = ({
             </div>
           ) : (
             <div className="space-y-1">
-              {comments.map((comment) => (
-                <div
-                  key={comment._id}
-                  className="
-                    flex gap-4
-                    py-4
-                    border-b border-white/5
-                  "
-                >
-                  {/* AVATAR */}
+              {comments.map(
+                (comment) => (
                   <div
+                    key={
+                      comment._id
+                    }
                     className="
-                      w-11 h-11
-                      rounded-full
-                      bg-linear-to-r
-                      from-indigo-500
-                      to-purple-500
-                      shrink-0
-                    "
-                  />
+                      flex gap-3
 
-                  {/* CONTENT */}
-                  <div className="flex-1">
-                    {/* TOP */}
-                    <div className="flex items-center gap-3">
-                      <h3
+                      py-3
+
+                      border-b
+                      border-white/5
+                    "
+                  >
+                    {/* Avatar */}
+                    <div
+                      className="
+                        w-10 h-10
+
+                        rounded-full
+
+                        bg-gradient-to-r
+                        from-indigo-500
+                        to-purple-500
+
+                        shrink-0
+                      "
+                    />
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div
                         className="
-                          text-white
-                          font-semibold
-                          text-[14px]
+                          flex items-center gap-2
                         "
                       >
-                        {comment.user?.name}
-                      </h3>
+                        <h3
+                          className="
+                            text-white
+                            font-medium
+                            text-sm
+                          "
+                        >
+                          {comment
+                            ?.user
+                            ?.name ||
+                            "Unknown User"}
+                        </h3>
+
+                        <span
+                          className="
+                            text-xs
+                            text-gray-500
+                          "
+                        >
+                          @
+                          {comment
+                            ?.user
+                            ?.username ||
+                            "anonymous"}
+                        </span>
+                      </div>
 
                       <p
-                        className="text-gray-500 text-sm"
+                        className="
+                          mt-1
+
+                          text-gray-300
+
+                          text-sm
+
+                          leading-6
+                        "
                       >
-                        @{comment.user?.username}
+                        {
+                          comment.text
+                        }
                       </p>
                     </div>
-
-                    {/* COMMENT */}
-                    <p
-                      className="
-                        text-gray-300
-                        text-[15px]
-                        leading-7
-                    
-                      "
-                    >
-                      {comment.text}
-                    </p>
                   </div>
-                </div>
-              ))}
+                )
+              )}
             </div>
           )}
         </div>
@@ -207,17 +323,24 @@ const CommentModal = ({
         {/* INPUT */}
         <div
           className="
-            border-t border-white/20
+            border-t
+            border-white/10
+
             p-3
           "
         >
           <div
             className="
               flex items-center gap-3
-              bg-white/3
-              border border-white/10
+
+              bg-white/5
+
+              border
+              border-white/10
+
               rounded-xl
-              px-4 py-2
+
+              px-3 py-2
             "
           >
             <input
@@ -225,25 +348,54 @@ const CommentModal = ({
               placeholder="Write a comment..."
               value={text}
               onChange={(e) =>
-                setText(e.target.value)
+                setText(
+                  e.target.value
+                )
               }
-              onKeyDown={handleKeyDown}
+              onKeyDown={
+                handleKeyDown
+              }
               className="
                 flex-1
+
                 bg-transparent
+
                 outline-none
+
                 text-white
+
                 placeholder:text-gray-500
-                text-[15px]
               "
             />
 
             <button
-              onClick={handleComment}
-              disabled={loading}
-              className="bg-linear-to-r  from-indigo-500   to-purple-500  hover:scale-105  transition-all duration-300  px-4  p-3   rounded-xl  text-white  shadow-lg"
+              onClick={
+                handleComment
+              }
+              disabled={
+                loading ||
+                !text.trim()
+              }
+              className="
+                bg-gradient-to-r
+                from-indigo-500
+                to-purple-500
+
+                hover:scale-105
+
+                transition-all duration-300
+
+                p-3
+
+                rounded-lg
+
+                text-white
+
+                disabled:opacity-50
+                disabled:hover:scale-100
+              "
             >
-              <FiSend size={18} />
+              <FiSend size={16} />
             </button>
           </div>
         </div>

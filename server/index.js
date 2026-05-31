@@ -49,8 +49,19 @@ io.on("connection", (socket) => {
 
   // Realtime comment event
   socket.on("sendComment", (data) => {
-    io.to(data.postId).emit("receiveComment", data);
-  });
+  io.to(data.postId).emit(
+    "receiveComment",
+    data.comment
+  );
+});
+
+  // REALTIME LIKE
+socket.on("sendLike", (data) => {
+  io.to(data.postId).emit(
+    "receiveLike",
+    data
+  );
+});
 
   socket.on("disconnect", () => {
     console.log("User disconnected");
