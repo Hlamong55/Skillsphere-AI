@@ -1,10 +1,46 @@
 const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
 
-const router = express.Router();
+const router =
+  express.Router();
 
-router.get("/profile", protect, async (req, res) => {
-  res.status(200).json(req.user);
-});
+const {
+  getUserProfile,
+  updateProfile,
+  followUser,
+  unfollowUser,
+} = require(
+  "../controllers/userController"
+);
+
+const protect = require(
+  "../middleware/authMiddleware"
+);
+
+// GET USER PROFILE
+router.get(
+  "/:id",
+  getUserProfile
+);
+
+// UPDATE PROFILE
+router.put(
+  "/profile",
+  protect,
+  updateProfile
+);
+
+// FOLLOW USER
+router.put(
+  "/follow/:id",
+  protect,
+  followUser
+);
+
+// UNFOLLOW USER
+router.put(
+  "/unfollow/:id",
+  protect,
+  unfollowUser
+);
 
 module.exports = router;

@@ -40,10 +40,35 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    bio: {
+    coverPhoto: {
       type: String,
       default: "",
     },
+
+    bio: {
+      type: String,
+      default: "",
+      maxlength: 300,
+    },
+
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    followers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    following: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
     role: {
       type: String,
@@ -61,4 +86,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);
