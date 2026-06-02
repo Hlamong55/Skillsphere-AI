@@ -176,7 +176,7 @@ const PostCard = ({ post }) => {
             alt=""
             className="
               w-full
-              max-h-[500px]
+              max-h-125
               object-cover
             "
           />

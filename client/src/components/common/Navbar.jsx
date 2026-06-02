@@ -89,30 +89,65 @@ const Navbar = () => {
 
               {/* User */}
               <div
+                onClick={() => navigate(`/profile/${user.user._id}`)}
                 className="
-                  hidden md:flex
-                  items-center gap-3
-                  px-4 py-2
-                  rounded-2xl
-                  bg-white/5
-                  border border-white/10
-                "
-              >
-                <div
-                  className="
-                    w-10 h-10
-                    rounded-full
-                    bg-linear-to-r
-                    from-indigo-500
-                    to-purple-500
-                  "
-                />
+    hidden md:flex
+    items-center gap-3
 
+    px-4 py-2
+
+    rounded-2xl
+
+    bg-white/5
+    border border-white/10
+
+    hover:bg-white/10
+    hover:scale-105
+
+    transition-all duration-300
+
+    cursor-pointer
+  "
+              >
+                {/* Avatar */}
+                {user.user.profilePicture ? (
+                  <img
+                    src={user.user.profilePicture}
+                    alt=""
+                    className="
+        w-10 h-10
+        rounded-full
+        object-cover
+      "
+                  />
+                ) : (
+                  <div
+                    className="
+        w-10 h-10
+        rounded-full
+
+        bg-linear-to-r
+        from-indigo-500
+        to-purple-500
+
+        flex
+        items-center
+        justify-center
+
+        text-white
+        font-bold
+      "
+                  >
+                    {user.user.name?.charAt(0)}
+                  </div>
+                )}
+
+                {/* Name */}
                 <span
                   className="
-                    text-gray-200
-                    font-semibold
-                  "
+      text-gray-200
+      font-semibold
+    "
                 >
                   {user.user.name}
                 </span>

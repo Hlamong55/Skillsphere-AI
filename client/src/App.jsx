@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Feed from "./pages/Feed";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -28,6 +29,8 @@ function App() {
           <Route path="/register" element={<Register />} />
 
           <Route path="/feed" element={<Feed />} />
+
+          <Route path="/profile/:id" element={<Profile />} />
         </Routes>
       </div>
     </BrowserRouter>
