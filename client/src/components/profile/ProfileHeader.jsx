@@ -1,180 +1,230 @@
+import { useState } from "react";
+
 import {
   FiEdit,
-//   FiMapPin,
 } from "react-icons/fi";
+
+import EditProfileModal from "./EditProfileModal";
 
 const ProfileHeader = ({
   user,
+  setUser,
 }) => {
+  const [openEdit, setOpenEdit] =
+    useState(false);
+
   return (
-    <div
-      className="
-        bg-white/3
-        border border-white/10
-        rounded-3xl
-        overflow-hidden
-        shadow-[0_10px_50px_rgba(0,0,0,0.4)]
-      "
-    >
-      {/* Cover */}
+    <>
       <div
         className="
-          h-72
-          bg-linear-to-r
-          from-indigo-600
-          via-purple-600
-          to-pink-600
+          bg-white/3
+          border border-white/10
+          rounded-3xl
+          overflow-hidden
+          shadow-[0_10px_50px_rgba(0,0,0,0.4)]
         "
       >
-        {user?.coverPhoto && (
-          <img
-            src={
-              user.coverPhoto
-            }
-            alt=""
-            className="
-              w-full h-full
-              object-cover
-            "
-          />
-        )}
-      </div>
-
-      <div className="px-8 pb-8">
-        {/* Avatar */}
+        {/* Cover */}
         <div
           className="
-            -mt-20
-            mb-5
+            h-72
+            bg-linear-to-r
+            from-indigo-600
+            via-purple-600
+            to-pink-600
           "
         >
-          <div
-            className="
-              w-40 h-40
-              rounded-full
-              border-6
-              border-[#0B1120]
-              overflow-hidden
-              bg-linear-to-r
-              from-indigo-500
-              to-purple-500
-            "
-          >
-            {user?.profilePicture && (
-              <img
-                src={
-                  user.profilePicture
-                }
-                alt=""
-                className="
-                  w-full h-full
-                  object-cover
-                "
-              />
-            )}
-          </div>
+          {user?.coverPhoto && (
+            <img
+              src={
+                user.coverPhoto
+              }
+              alt=""
+              className="
+                w-full h-full
+                object-cover
+              "
+            />
+          )}
         </div>
 
-        {/* Info */}
-        <div
-          className="
-            flex
-            justify-between
-            gap-6
-          "
-        >
-          <div>
-            <h1
-              className="
-                text-4xl
-                font-bold
-                text-white
-              "
-            >
-              {user?.name}
-            </h1>
-
-            <p
-              className="
-                text-gray-400
-                mt-1
-              "
-            >
-              @{user?.username}
-            </p>
-
-            <p
-              className="
-                text-gray-300
-                mt-5
-                max-w-2xl
-                leading-8
-              "
-            >
-              {user?.bio ||
-                "No bio added yet"}
-            </p>
-
-            {/* Skills */}
+        <div className="px-8 pb-8">
+          {/* Avatar */}
+          <div
+            className="
+              -mt-20
+              mb-5
+            "
+          >
             <div
               className="
-                flex flex-wrap
-                gap-2
-                mt-6
+                w-40 h-40
+                rounded-full
+                border-6
+                border-[#0B1120]
+                overflow-hidden
+                bg-linear-to-r
+                from-indigo-500
+                to-purple-500
+
+                flex
+                items-center
+                justify-center
               "
             >
-              {user?.skills?.map(
-                (
-                  skill,
-                  index
-                ) => (
-                  <span
-                    key={index}
-                    className="
-                      px-4 py-2
-                      rounded-full
-                      bg-indigo-500/15
-                      border border-indigo-500/20
-                      text-indigo-300
-                      text-sm
-                    "
-                  >
-                    {skill}
-                  </span>
-                )
+              {user?.profilePicture ? (
+                <img
+                  src={
+                    user.profilePicture
+                  }
+                  alt=""
+                  className="
+                    w-full h-full
+                    object-cover
+                  "
+                />
+              ) : (
+                <span
+                  className="
+                    text-5xl
+                    font-bold
+                    text-white
+                  "
+                >
+                  {user?.name?.charAt(
+                    0
+                  )}
+                </span>
               )}
             </div>
           </div>
 
-          {/* Edit */}
-          <button
+          {/* Info */}
+          <div
             className="
-              h-fit
-              flex items-center gap-2
-
-              bg-linear-to-r
-              from-indigo-500
-              to-purple-500
-
-              hover:scale-105
-
-              transition-all duration-300
-
-              px-5 py-3
-
-              rounded-xl
-
-              text-white
-              font-semibold
+              flex
+              justify-between
+              gap-6
             "
           >
-            <FiEdit />
+            <div>
+              <h1
+                className="
+                  text-4xl
+                  font-bold
+                  text-white
+                "
+              >
+                {user?.name}
+              </h1>
 
-            Edit Profile
-          </button>
+              <p
+                className="
+                  text-gray-400
+                  mt-1
+                "
+              >
+                @{user?.username}
+              </p>
+
+              <p
+                className="
+                  text-gray-300
+                  mt-5
+                  max-w-2xl
+                  leading-8
+                "
+              >
+                {user?.bio ||
+                  "No bio added yet"}
+              </p>
+
+              {/* Skills */}
+              <div
+                className="
+                  flex flex-wrap
+                  gap-2
+                  mt-6
+                "
+              >
+                {user?.skills
+                  ?.length > 0 ? (
+                  user.skills.map(
+                    (
+                      skill,
+                      index
+                    ) => (
+                      <span
+                        key={index}
+                        className="
+                          px-4 py-2
+                          rounded-full
+                          bg-indigo-500/15
+                          border border-indigo-500/20
+                          text-indigo-300
+                          text-sm
+                        "
+                      >
+                        {skill}
+                      </span>
+                    )
+                  )
+                ) : (
+                  <span
+                    className="
+                      text-gray-500
+                      text-sm
+                    "
+                  >
+                    No skills added
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Edit */}
+            <button
+              onClick={() =>
+                setOpenEdit(true)
+              }
+              className="
+                h-fit
+                flex items-center gap-2
+
+                bg-linear-to-r
+                from-indigo-500
+                to-purple-500
+
+                hover:scale-105
+
+                transition-all duration-300
+
+                px-5 py-3
+
+                rounded-xl
+
+                text-white
+                font-semibold
+              "
+            >
+              <FiEdit />
+
+              Edit Profile
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* EDIT MODAL */}
+      <EditProfileModal
+        user={user}
+        setUser={setUser}
+        isOpen={openEdit}
+        onClose={() =>
+          setOpenEdit(false)
+        }
+      />
+    </>
   );
 };
 
