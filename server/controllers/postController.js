@@ -1,6 +1,5 @@
 const Post = require("../models/Post");
 
-
 // CREATE POST
 const createPost = async (req, res) => {
   try {
@@ -20,7 +19,6 @@ const createPost = async (req, res) => {
     });
   }
 };
-
 
 // GET ALL POSTS
 const getPosts = async (req, res) => {
@@ -50,7 +48,6 @@ const getPosts = async (req, res) => {
   }
 };
 
-
 // LIKE POST
 const toggleLike = async (req, res) => {
   try {
@@ -69,14 +66,14 @@ const toggleLike = async (req, res) => {
 
     if (alreadyLiked) {
       post.likes = post.likes.filter(
-        (id) => id.toString() !== userId.toString()
+        (id) => id.toString() !== userId.toString(),
       );
     } else {
       post.likes.push(userId);
 
       // Remove dislike if exists
       post.dislikes = post.dislikes.filter(
-        (id) => id.toString() !== userId.toString()
+        (id) => id.toString() !== userId.toString(),
       );
     }
 
@@ -94,7 +91,6 @@ const toggleLike = async (req, res) => {
     });
   }
 };
-
 
 // DISLIKE POST
 const toggleDislike = async (req, res) => {
@@ -114,14 +110,14 @@ const toggleDislike = async (req, res) => {
 
     if (alreadyDisliked) {
       post.dislikes = post.dislikes.filter(
-        (id) => id.toString() !== userId.toString()
+        (id) => id.toString() !== userId.toString(),
       );
     } else {
       post.dislikes.push(userId);
 
       // Remove like if exists
       post.likes = post.likes.filter(
-        (id) => id.toString() !== userId.toString()
+        (id) => id.toString() !== userId.toString(),
       );
     }
 
@@ -140,9 +136,28 @@ const toggleDislike = async (req, res) => {
   }
 };
 
+const getUserPosts = async (req, res) => {
+  try {
+    const posts = await Post.find({
+      user: req.params.id,
+    })
+      .populate("user", "name username profilePicture")
+      .sort({
+        createdAt: -1,
+      });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   createPost,
   getPosts,
   toggleLike,
   toggleDislike,
+  getUserPosts,
 };
