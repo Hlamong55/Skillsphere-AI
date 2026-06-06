@@ -9,7 +9,16 @@ const getUserProfile = async (
     const user =
       await User.findById(
         req.params.id
-      ).select("-password");
+      )
+        .populate(
+          "followers",
+          "_id"
+        )
+        .populate(
+          "following",
+          "_id"
+        )
+        .select("-password");
 
     if (!user) {
       return res

@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import api from "../services/api";
+import { AuthContext } from "../context/AuthContext";
 
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileStats from "../components/profile/ProfileStats";
@@ -10,28 +11,24 @@ import UserPosts from "../components/profile/UserPosts";
 const Profile = () => {
   const { id } = useParams();
 
-  const [user, setUser] =
-    useState(null);
+  const { user: authUser } = useContext(AuthContext);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [user, setUser] = useState(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfile =
-      async () => {
-        try {
-          const { data } =
-            await api.get(
-              `/users/${id}`
-            );
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.get(`/users/${id}`);
 
-          setUser(data);
-        } catch (error) {
-          console.log(error);
-        } finally {
-          setLoading(false);
-        }
-      };
+        setUser(data);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     fetchProfile();
   }, [id]);
@@ -52,14 +49,13 @@ const Profile = () => {
 
   return (
     <div
-      className="
-        max-w-6xl
-        mx-auto
-        px-6
-        py-8
-      "
+      className="max-w-6xl mx-auto px-6 py-8"
     >
-      <ProfileHeader user={user} />
+      <ProfileHeader
+        user={user}
+        setUser={setUser}
+        currentUser={authUser?.user}
+      />
 
       <ProfileStats user={user} />
 

@@ -1,17 +1,91 @@
 import { useState } from "react";
 
-import {
-  FiEdit,
-} from "react-icons/fi";
+import { FiEdit } from "react-icons/fi";
+
+import api from "../../services/api";
+import toast from "react-hot-toast";
 
 import EditProfileModal from "./EditProfileModal";
 
 const ProfileHeader = ({
   user,
   setUser,
+  currentUser,
 }) => {
   const [openEdit, setOpenEdit] =
     useState(false);
+
+  const isOwnProfile =
+    currentUser?._id === user?._id;
+
+  const isFollowing =
+    user?.followers?.some(
+      (follower) =>
+        follower._id ===
+        currentUser?._id
+    );
+
+  const handleFollow =
+    async () => {
+      try {
+        await api.put(
+          `/users/follow/${user._id}`
+        );
+
+        setUser((prev) => ({
+          ...prev,
+          followers: [
+            ...prev.followers,
+            {
+              _id:
+                currentUser._id,
+            },
+          ],
+        }));
+
+        toast.success(
+          "Following user"
+        );
+      } catch (error) {
+        toast.error(
+          error.response?.data
+            ?.message ||
+            "Failed to follow"
+        );
+      }
+    };
+
+  const handleUnfollow =
+    async () => {
+      try {
+        await api.put(
+          `/users/unfollow/${user._id}`
+        );
+
+        setUser((prev) => ({
+          ...prev,
+
+          followers:
+            prev.followers.filter(
+              (
+                follower
+              ) =>
+                follower._id !==
+                currentUser._id
+            ),
+        }));
+
+        toast.success(
+          "Unfollowed user"
+        );
+      } catch (error) {
+        toast.error(
+          error.response?.data
+            ?.message ||
+            "Failed to unfollow"
+        );
+      }
+    };
 
   return (
     <>
@@ -127,6 +201,36 @@ const ProfileHeader = ({
                 @{user?.username}
               </p>
 
+              <div
+                className="
+                  flex
+                  gap-6
+                  mt-4
+                "
+              >
+                <span className="text-gray-300">
+                  <strong className="text-white">
+                    {
+                      user
+                        ?.followers
+                        ?.length
+                    }
+                  </strong>{" "}
+                  Followers
+                </span>
+
+                <span className="text-gray-300">
+                  <strong className="text-white">
+                    {
+                      user
+                        ?.following
+                        ?.length
+                    }
+                  </strong>{" "}
+                  Following
+                </span>
+              </div>
+
               <p
                 className="
                   text-gray-300
@@ -182,40 +286,70 @@ const ProfileHeader = ({
               </div>
             </div>
 
-            {/* Edit */}
-            <button
-              onClick={() =>
-                setOpenEdit(true)
-              }
-              className="
-                h-fit
-                flex items-center gap-2
+            {/* Action Button */}
+            {isOwnProfile ? (
+              <button
+                onClick={() =>
+                  setOpenEdit(
+                    true
+                  )
+                }
+                className="
+                  h-fit
+                  flex items-center gap-2
 
-                bg-linear-to-r
-                from-indigo-500
-                to-purple-500
+                  bg-linear-to-r
+                  from-indigo-500
+                  to-purple-500
 
-                hover:scale-105
+                  hover:scale-105
 
-                transition-all duration-300
+                  transition-all duration-300
 
-                px-5 py-3
+                  px-5 py-3
 
-                rounded-xl
+                  rounded-xl
 
-                text-white
-                font-semibold
-              "
-            >
-              <FiEdit />
+                  text-white
+                  font-semibold
+                "
+              >
+                <FiEdit />
+                Edit Profile
+              </button>
+            ) : (
+              <button
+                onClick={
+                  isFollowing
+                    ? handleUnfollow
+                    : handleFollow
+                }
+                className={`
+                  h-fit
+                  px-6 py-3
 
-              Edit Profile
-            </button>
+                  rounded-xl
+
+                  font-semibold
+
+                  transition-all duration-300
+
+                  ${
+                    isFollowing
+                      ? "bg-white/10 border border-white/20 text-white"
+                      : "bg-linear-to-r from-indigo-500 to-purple-500 text-white hover:scale-105"
+                  }
+                `}
+              >
+                {isFollowing
+                  ? "Following"
+                  : "Follow"}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* EDIT MODAL */}
       <EditProfileModal
         user={user}
         setUser={setUser}
