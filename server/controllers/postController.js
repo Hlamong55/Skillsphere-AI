@@ -80,6 +80,7 @@ const toggleLike = async (req, res) => {
     await post.save();
 
     res.status(200).json({
+      isLiked: !alreadyLiked,
       likesCount: post.likes.length,
       dislikesCount: post.dislikes.length,
       likes: post.likes,

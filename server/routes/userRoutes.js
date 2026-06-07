@@ -12,8 +12,21 @@ const {
   "../controllers/userController"
 );
 
-const protect = require(
+const {
+  protect
+} = require(
   "../middleware/authMiddleware"
+);
+
+router.get(
+  "/search/users",
+  searchUsers
+);
+
+router.get(
+  "/suggested",
+  protect,
+  getSuggestedUsers
 );
 
 // GET USER PROFILE
@@ -21,6 +34,7 @@ router.get(
   "/:id",
   getUserProfile
 );
+
 
 // UPDATE PROFILE
 router.put(

@@ -5,6 +5,7 @@ const {
   getPosts,
   toggleLike,
   toggleDislike,
+  getUserPosts,
 } = require("../controllers/postController");
 
 const { protect } = require("../middleware/authMiddleware");

@@ -255,7 +255,7 @@ const CommentModal = ({
 
                         rounded-full
 
-                        bg-gradient-to-r
+                        bg-linear-to-r
                         from-indigo-500
                         to-purple-500
 
@@ -377,7 +377,7 @@ const CommentModal = ({
                 !text.trim()
               }
               className="
-                bg-gradient-to-r
+                bg-linear-to-r
                 from-indigo-500
                 to-purple-500
 
