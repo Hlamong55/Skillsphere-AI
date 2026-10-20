@@ -1,36 +1,76 @@
+
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 
-// Register
+// REGISTER USER
 const registerUser = async (req, res) => {
   try {
     const { name, username, email, phone, password } = req.body;
 
-    // Check existing user
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }, { phone }],
-    });
-
-    if (existingUser) {
+    // Validate required fields
+    if (!name || !username || !email || !phone || !password) {
       return res.status(400).json({
-        message: "User already exists",
+        message: "All fields are required",
       });
     }
 
-    // password
+    const cleanUsername = username.trim().toLowerCase();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = String(phone).trim();
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
+    // Check duplicate username
+    const usernameExists = await User.findOne({
+      username: cleanUsername,
+    });
+
+    if (usernameExists) {
+      return res.status(409).json({
+        message: "Username already exists",
+      });
+    }
+
+    // Check duplicate email
+    const emailExists = await User.findOne({
+      email: cleanEmail,
+    });
+
+    if (emailExists) {
+      return res.status(409).json({
+        message: "Email already registered",
+      });
+    }
+
+    // Check duplicate phone
+    const phoneExists = await User.findOne({
+      phone: cleanPhone,
+    });
+
+    if (phoneExists) {
+      return res.status(409).json({
+        message: "Phone number already registered",
+      });
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Save new user
     const user = await User.create({
-      name,
-      username,
-      email,
-      phone,
+      name: name.trim(),
+      username: cleanUsername,
+      email: cleanEmail,
+      phone: cleanPhone,
       password: hashedPassword,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "User registered successfully",
       token: generateToken(user._id),
       user: {
@@ -44,20 +84,41 @@ const registerUser = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    console.error("Registration error:", error);
+
+    // MongoDB unique index error
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0];
+
+      return res.status(409).json({
+        message: field
+          ? `${field} already registered`
+          : "Account information already exists",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Registration failed. Please try again.",
     });
   }
 };
 
-// Login
+// LOGIN USER
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email });
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
+    }
+
+    const user = await User.findOne({
+      email: email.trim().toLowerCase(),
+    });
 
     if (!user) {
       return res.status(400).json({
@@ -65,8 +126,10 @@ const loginUser = async (req, res) => {
       });
     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
 
     if (!isMatch) {
       return res.status(400).json({
@@ -74,7 +137,7 @@ const loginUser = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Login successful",
       token: generateToken(user._id),
       user: {
@@ -88,9 +151,12 @@ const loginUser = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    console.error("Login error:", error);
+
+    return res.status(500).json({
+      message: "Login failed. Please try again.",
     });
   }
 };
