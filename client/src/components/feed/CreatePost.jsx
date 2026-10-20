@@ -42,7 +42,7 @@ const CreatePost = ({ fetchPosts, addNewPost }) => {
 
       // INSTANT UI UPDATE
       if (addNewPost) {
-        addNewPost(data.post);
+        addNewPost(data);
       }
 
       setContent("");

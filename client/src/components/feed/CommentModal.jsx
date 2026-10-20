@@ -13,15 +13,11 @@ const CommentModal = ({
   post,
   isOpen,
   onClose,
+  onCommentAdded,
 }) => {
-  const [comments, setComments] =
-    useState([]);
-
-  const [text, setText] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
+  const [comments, setComments] = useState([]);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // LOAD COMMENTS
   useEffect(() => {
@@ -134,49 +130,14 @@ const CommentModal = ({
 
   return (
     <div
-      className="
-        fixed inset-0
-        z-50
-
-        flex items-center justify-center
-
-        bg-black/70
-        backdrop-blur-md
-
-        p-4
-      "
+      className=" fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
     >
       <div
-        className="
-          w-full
-          max-w-xl
-
-          h-[70vh]
-
-          bg-[#0B1120]
-
-          border
-          border-white/10
-
-          rounded-xl
-
-          overflow-hidden
-
-          shadow-[0_20px_80px_rgba(0,0,0,0.6)]
-
-          flex flex-col
-        "
+        className=" w-full max-w-2xl h-[80vh] bg-[#0B1120] border border-white/10 rounded-xl overflow-hidden shadow-[0_20px_80px_rgba(0,0,0,0.6)] flex flex-col "
       >
         {/* HEADER */}
         <div
-          className="
-            flex items-center justify-between
-
-            px-5 py-4
-
-            border-b
-            border-white/10
-          "
+          className=" flex items-center justify-between px-5 py-4 border-b border-white/10 "
         >
           <div className="flex items-center gap-3">
             <FiMessageCircle
@@ -185,11 +146,7 @@ const CommentModal = ({
             />
 
             <h2
-              className="
-                text-lg
-                font-semibold
-                text-white
-              "
+              className=" text-lg font-semibold text-white "
             >
               Comments
             </h2>
@@ -197,11 +154,7 @@ const CommentModal = ({
 
           <button
             onClick={onClose}
-            className="
-              text-gray-500
-              hover:text-white
-              transition-all duration-300
-            "
+            className=" text-gray-500 hover:text-white transition-all duration-300 "
           >
             <FiX size={22} />
           </button>
@@ -209,25 +162,12 @@ const CommentModal = ({
 
         {/* COMMENTS */}
         <div
-          className="
-            flex-1
-
-            overflow-y-auto
-
-            px-4
-            py-2
-          "
+          className=" flex-1 overflow-y-auto px-4 py-2"
         >
           {comments.length ===
           0 ? (
             <div
-              className="
-                h-full
-
-                flex items-center justify-center
-
-                text-gray-500
-              "
+              className=" h-full flex items-center justify-center text-gray-500 "
             >
               No comments yet
             </div>
@@ -239,43 +179,19 @@ const CommentModal = ({
                     key={
                       comment._id
                     }
-                    className="
-                      flex gap-3
-
-                      py-3
-
-                      border-b
-                      border-white/5
-                    "
+                    className=" flex gap-3 py-3 border-b border-white/5 "
                   >
                     {/* Avatar */}
                     <div
-                      className="
-                        w-10 h-10
-
-                        rounded-full
-
-                        bg-linear-to-r
-                        from-indigo-500
-                        to-purple-500
-
-                        shrink-0
-                      "
+                      className=" w-10 h-10 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 shrink-0 "
                     />
 
                     {/* Content */}
                     <div className="flex-1">
-                      <div
-                        className="
-                          flex items-center gap-2
-                        "
+                      <div className="flex items-center gap-2"
                       >
                         <h3
-                          className="
-                            text-white
-                            font-medium
-                            text-sm
-                          "
+                          className=" text-white text-sm font-medium  "
                         >
                           {comment
                             ?.user
@@ -283,11 +199,7 @@ const CommentModal = ({
                             "Unknown User"}
                         </h3>
 
-                        <span
-                          className="
-                            text-xs
-                            text-gray-500
-                          "
+                        <span className=" text-xs text-gray-500 "
                         >
                           @
                           {comment
@@ -297,16 +209,7 @@ const CommentModal = ({
                         </span>
                       </div>
 
-                      <p
-                        className="
-                          mt-1
-
-                          text-gray-300
-
-                          text-sm
-
-                          leading-6
-                        "
+                      <p className=" mt-1 text-gray-300  leading-6 "
                       >
                         {
                           comment.text
@@ -322,26 +225,10 @@ const CommentModal = ({
 
         {/* INPUT */}
         <div
-          className="
-            border-t
-            border-white/10
-
-            p-3
-          "
+          className=" border-t border-white/10 p-3 "
         >
           <div
-            className="
-              flex items-center gap-3
-
-              bg-white/5
-
-              border
-              border-white/10
-
-              rounded-xl
-
-              px-3 py-2
-            "
+            className=" flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2 "
           >
             <input
               type="text"

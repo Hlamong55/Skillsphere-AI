@@ -8,6 +8,8 @@ const {
   updateProfile,
   followUser,
   unfollowUser,
+  searchUsers,
+  getSuggestedUsers,
 } = require(
   "../controllers/userController"
 );

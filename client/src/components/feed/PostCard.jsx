@@ -8,21 +8,56 @@ import {
 } from "react-icons/fi";
 
 import CommentModal from "./CommentModal";
-
 import api from "../../services/api";
 import socket from "../../socket/socket";
 
 const PostCard = ({ post }) => {
-  const [openComments, setOpenComments] =
-    useState(false);
+  
+  // Get currently logged-in user's ID
+  const storedUser = localStorage.getItem("userInfo");
 
-  const [liked, setLiked] =
-    useState(false);
+  let currentUserId = "";
 
-  const [likesCount, setLikesCount] =
-    useState(
-      post?.likes?.length || 0
+  try {
+    const parsedUser = storedUser
+      ? JSON.parse(storedUser)
+      : null;
+
+    currentUserId = parsedUser?.user?._id || "";
+  } catch (error) {
+    console.error("Unable to read user info:", error);
+  }
+
+
+
+  const [openComments, setOpenComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState( post?.commentsCount || 0 );
+
+  useEffect(() => {
+  setCommentsCount(post?.commentsCount || 0);
+  }, [post?.commentsCount]);
+
+  
+  const [liked, setLiked] = useState(() =>
+    (post?.likes || []).some(
+      (id) => String(id?._id || id) === String(currentUserId)
+    )
+  );
+
+  const [likesCount, setLikesCount] = useState( post?.likes?.length || 0 );
+
+
+  
+  // Keep like status updated when post data changes
+  useEffect(() => {
+    const isLiked = (post?.likes || []).some(
+      (id) => String(id?._id || id) === String(currentUserId)
     );
+
+    setLiked(isLiked);
+    setLikesCount(post?.likes?.length || 0);
+  }, [post?.likes, currentUserId]);
+
 
   // REALTIME LIKE LISTENER
   useEffect(() => {
@@ -85,16 +120,7 @@ const PostCard = ({ post }) => {
     <>
       {/* CARD */}
       <div
-        className="
-          bg-white/3
-          border border-white/10
-          backdrop-blur-2xl
-          rounded-2xl
-          overflow-hidden
-          shadow-[0_10px_50px_rgba(0,0,0,0.45)]
-          hover:border-indigo-500/20
-          transition-all duration-500
-        "
+        className=" bg-white/3 border border-white/10  backdrop-blur-2xl rounded-2xl  overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.45)] hover:border-indigo-500/20 transition-all duration-500"
       >
         {/* HEADER */}
         <div className="p-6">
@@ -144,11 +170,7 @@ const PostCard = ({ post }) => {
 
             {/* More */}
             <button
-              className="
-                text-gray-500
-                hover:text-white
-                transition-all duration-300
-              "
+              className=" text-gray-500 hover:text-white transition-all duration-300"
             >
               <FiMoreHorizontal
                 size={20}
@@ -158,12 +180,7 @@ const PostCard = ({ post }) => {
 
           {/* Content */}
           <p
-            className="
-              text-gray-200
-              text-[16px]
-              leading-7
-              mt-5
-            "
+            className=" text-gray-200 text-[16px] leading-7 mt-5"
           >
             {post?.content}
           </p>
@@ -257,8 +274,7 @@ const PostCard = ({ post }) => {
               />
 
               <span className="text-sm font-medium">
-                {post?.commentsCount ||
-                  0}
+                {commentsCount}
               </span>
             </button>
 
@@ -291,14 +307,11 @@ const PostCard = ({ post }) => {
       {/* COMMENT MODAL */}
       <CommentModal
         post={post}
-        isOpen={
-          openComments
-        }
-        onClose={() =>
-          setOpenComments(
-            false
-          )
-        }
+        isOpen={ openComments }
+        onClose={() => setOpenComments(false)}
+        onCommentAdded={() => {
+          setCommentsCount((prev) => prev + 1);
+        }}
       />
     </>
   );
