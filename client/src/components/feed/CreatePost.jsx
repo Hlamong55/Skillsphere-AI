@@ -70,27 +70,14 @@ const CreatePost = ({ fetchPosts, addNewPost }) => {
 
   return (
     <div
-      className="
-        bg-white/3
-        border border-white/10
-        backdrop-blur-2xl
-        rounded-2xl
-        p-4
-        shadow-[0_10px_60px_rgba(0,0,0,0.45)]
-      "
+      className=" bg-white/3 border border-white/10 backdrop-blur-2xl  rounded-2xl p-4 shadow-[0_10px_60px_rgba(0,0,0,0.45)]"
     >
       {/* TOP */}
       <div className="flex items-start gap-4">
         {/* AVATAR */}
         <div
-          className="
-            w-12 h-12
-            rounded-full
-            bg-linear-to-r
-            from-indigo-500
-            to-purple-500
-            shrink-0
-          "
+          className=" w-12 h-12 rounded-full
+            bg-linear-to-r from-indigo-500 to-purple-500 shrink-0"
         />
 
         {/* INPUT AREA */}
@@ -102,20 +89,14 @@ const CreatePost = ({ fetchPosts, addNewPost }) => {
             onKeyDown={handleKeyDown}
             placeholder="Share your ideas with the AI community..."
             rows={4}
-            className="
-              w-full
-              bg-[#0B1120]
+            className=" w-full bg-[#0B1120]
               border border-white/10
-              rounded-2xl
-              p-4
-              text-white
+              rounded-2xl p-4 text-white
               placeholder:text-gray-500
-              resize-none
-              outline-none
+              resize-none outline-none
               focus:border-indigo-500/40
               transition-all duration-300
-              leading-7
-            "
+              leading-7 "
           />
 
           {/* IMAGE PREVIEW */}
