@@ -37,9 +37,13 @@ const updateProfile = async (req, res) => {
 
     user.bio = req.body.bio || user.bio;
 
-    user.profilePicture = req.body.profilePicture || user.profilePicture;
+    if (typeof req.body.profilePicture === "string") {
+      user.profilePicture = req.body.profilePicture.trim();
+    }
 
-    user.coverPhoto = req.body.coverPhoto || user.coverPhoto;
+    if (typeof req.body.coverPhoto === "string") {
+      user.coverPhoto = req.body.coverPhoto.trim();
+    }
 
     user.skills = req.body.skills || user.skills;
 
@@ -166,29 +170,20 @@ const searchUsers = async (req, res) => {
   }
 };
 
-const getSuggestedUsers = async (
-  req,
-  res
-) => {
+const getSuggestedUsers = async (req, res) => {
   try {
-    const users =
-      await User.find({
-        _id: {
-          $ne: req.user._id,
-        },
-      })
-        .select(
-          "name username profilePicture"
-        )
-        .limit(5);
+    const users = await User.find({
+      _id: {
+        $ne: req.user._id,
+      },
+    })
+      .select("name username profilePicture")
+      .limit(5);
 
-    res.status(200).json(
-      users
-    );
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({
-      message:
-        error.message,
+      message: error.message,
     });
   }
 };
