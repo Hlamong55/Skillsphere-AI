@@ -181,13 +181,23 @@ const ResourceCard = ({ resource, onRated }) => {
           </a>
         )}
 
+
         <div className="pt-4 border-t border-white/10">
-          <p className="text-xs text-gray-500 mb-2">
+
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-gray-400">
+            {selectedRating
+              ? `Your rating: ${selectedRating}/5`
+              : "Select a star to rate this resource"}
+            </p>
+
+            <p className="text-xs text-gray-500">
             Shared by{" "}
             <span className="text-gray-300">
               {resource.createdBy?.name || "Unknown User"}
             </span>
-          </p>
+            </p>
+          </div>
 
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="flex items-center gap-1">
@@ -223,11 +233,6 @@ const ResourceCard = ({ resource, onRated }) => {
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 mt-2">
-            {selectedRating
-              ? `Your rating: ${selectedRating}/5`
-              : "Select a star to rate this resource"}
-          </p>
         </div>
       </div>
     </article>
@@ -458,7 +463,7 @@ const Resources = () => {
             ))}
           </div>
         )}
-        
+
 
         {/* PAGINATION */}
         {!loading && !error && totalPages > 1 && (

@@ -17,6 +17,7 @@ import {
   FiX,
   FiChevronDown,
   FiZap,
+  FiBookOpen,
 } from "react-icons/fi";
 
 import { AuthContext } from "../../context/AuthContext";
@@ -25,6 +26,7 @@ const navItems = [
   { label: "Home", path: "/", icon: FiHome },
   { label: "Feed", path: "/feed", icon: FiGrid },
   { label: "Explore", path: "/search", icon: FiSearch },
+  { label: "Learn", path: "/resources", icon: FiBookOpen },
 ];
 
 const Navbar = () => {

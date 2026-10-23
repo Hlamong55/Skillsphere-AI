@@ -9,21 +9,36 @@ const {
 } = require("../controllers/resourceController");
 
 const {
+  getMyResourceRating,
+} = require("../controllers/ratingController");
+
+const {
   protect,
 } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Create resource - Login required
+// CREATE RESOURCE
 router.post("/", protect, createResource);
 
-// Get resources - Public
+// LIST RESOURCES
 router.get("/", getResources);
 
-// Get single resource - Public
-router.get("/:id", getResourceById);
+// GET MY RATING
+router.get(
+  "/:id/my-rating",
+  protect,
+  getMyResourceRating
+);
 
-// Rate resource - Login required
-router.put("/:id/rate", protect, rateResource);
+// ADD OR UPDATE RATING
+router.put(
+  "/:id/rate",
+  protect,
+  rateResource
+);
+
+// RESOURCE DETAILS
+router.get("/:id", getResourceById);
 
 module.exports = router;
