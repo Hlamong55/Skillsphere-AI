@@ -76,59 +76,33 @@ const Home = () => {
 
   return (
     <div
-      className="
-        relative
-        overflow-hidden
-        min-h-screen
-        p-6
-      "
+      className="relative overflow-hidden min-h-screen p-6"
     >
 
       {/* Background Glow */}
       <div
         ref={blob1Ref}
-        className="
-          absolute
-          top-20
-          left-10
-          w-[400px]
-          h-[400px]
+        className=" absolute top-20 left-10
+          w-100 h-100
           bg-indigo-500/20
-          blur-[120px]
-          rounded-full
-        "
+          blur-[120px] rounded-full"
       />
 
       <div
         ref={blob2Ref}
-        className="
-          absolute
-          bottom-10
-          right-10
-          w-[400px]
-          h-[400px]
-          bg-purple-500/20
-          blur-[120px]
-          rounded-full
+        className="absolute bottom-10 right-10
+          w-100 h-400 bg-purple-500/20
+          blur-[120px] rounded-full
         "
       />
 
       <div
-        className="
-          max-w-7xl
-          mx-auto
-          relative z-10
-        "
+        className="max-w-7xl mx-auto relative z-10"
       >
 
         {/* Hero */}
         <div
-          className="
-            grid lg:grid-cols-2
-            gap-20
-            items-center
-            min-h-[90vh]
-          "
+          className=" grid lg:grid-cols-2 gap-20 items-center min-h-[90vh]"
         >
 
           {/* Left */}
@@ -167,7 +141,7 @@ const Home = () => {
               >
                 <span
                   className="
-                    bg-gradient-to-r
+                    bg-linear-to-r
                     from-indigo-400
                     via-purple-400
                     to-pink-400
@@ -213,36 +187,29 @@ const Home = () => {
               <div className="flex flex-wrap gap-5">
 
                 <button
-                  className="
-                    bg-gradient-to-r
+                  className=" bg-linear-to-r
                     from-indigo-500
                     to-purple-500
                     hover:scale-105
                     transition-all duration-300
                     text-white
-                    px-8 py-4
-                    rounded-2xl
+                    px-8 py-4 rounded-2xl
                     shadow-lg shadow-indigo-500/30
-                    font-bold
-                    text-lg
-                  "
+                    font-bold text-lg "
                 >
                   Get Started
                 </button>
 
                 <button
-                  className="
-                    bg-white/5
+                  className=" bg-white/5
                     border border-white/10
                     backdrop-blur-xl
                     hover:bg-white/10
                     hover:scale-105
                     transition-all duration-300
                     text-gray-200
-                    px-8 py-4
-                    rounded-2xl
-                    font-bold
-                    text-lg
+                    px-8 py-4 rounded-2xl
+                    font-bold text-lg
                   "
                 >
                   Explore Community
@@ -260,29 +227,20 @@ const Home = () => {
           >
 
             <div
-              className="
-                absolute
-                inset-0
-                bg-gradient-to-r
+              className=" absolute inset-0
+                bg-linear-to-r
                 from-indigo-500/20
                 to-purple-500/20
-                blur-3xl
-                rounded-[40px]
+                blur-3xl rounded-[40px]
               "
             />
 
             <img
               src={heroImage}
               alt="AI Hero"
-              className="
-                relative
-                rounded-[40px]
+              className=" relative rounded-[40px]
                 border border-white/10
-                shadow-2xl
-                object-cover
-                w-full
-                h-140
-              "
+                shadow-2xl object-cover w-full h-140"
             />
 
           </div>
@@ -291,11 +249,7 @@ const Home = () => {
 
         {/* Stats */}
         <div
-          className="
-            grid md:grid-cols-3
-            gap-8
-            py-16
-          "
+          className=" grid md:grid-cols-3 gap-8 py-16"
         >
 
           {[
@@ -317,34 +271,24 @@ const Home = () => {
 
             <div
               key={index}
-              className="
-                bg-white/5
+              className=" bg-white/5
                 border border-white/10
                 backdrop-blur-2xl
-                rounded-3xl
-                p-8
+                rounded-3xl p-8
                 hover:border-indigo-500/30
-                hover:translate-y-[-5px]
+                hover:translate-y-1.25
                 transition-all duration-500
               "
             >
 
               <h2
-                className="
-                  text-2xl
-                  font-bold
-                  text-white
-                  mb-4
-                "
+                className=" text-2xl font-bold text-white mb-4"
               >
                 {item.title}
               </h2>
 
               <p
-                className="
-                  text-gray-400
-                  leading-relaxed
-                "
+                className=" text-gray-400 leading-relaxed"
               >
                 {item.desc}
               </p>
