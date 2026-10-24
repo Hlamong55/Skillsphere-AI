@@ -10,6 +10,7 @@ import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import Resources from "./pages/Resources";
+import Events from "./pages/Events";
 
 function App() {
   return (
@@ -24,9 +25,8 @@ function App() {
           <Route path="/feed" element={<Feed />} />
           <Route path="/profile/:id" element={<Profile />} />
           <Route path="/search" element={<Search />} />
-
-          {/* LEARNING RESOURCE HUB */}
           <Route path="/resources" element={<Resources />} />
+          <Route path="/events" element={<Events />} />
         </Routes>
       </div>
     </BrowserRouter>

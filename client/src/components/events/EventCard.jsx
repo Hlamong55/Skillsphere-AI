@@ -1,4 +1,3 @@
-
 import {
   FiCalendar,
   FiMapPin,
@@ -7,10 +6,7 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 
-import {
-  formatEventDate,
-  isUpcomingEvent,
-} from "../../utils/eventHelpers";
+import { formatEventDate, isUpcomingEvent } from "../../utils/eventHelpers";
 
 const EventCard = ({ event, onView }) => {
   const upcoming = isUpcomingEvent(event.eventDate);
@@ -37,7 +33,6 @@ const EventCard = ({ event, onView }) => {
       />
 
       <div className="flex flex-col flex-1 p-6 gap-4">
-
         {/* CATEGORY AND STATUS */}
         <div className="flex items-center justify-between gap-3">
           <span className="px-3 py-1 rounded-full text-xs font-semibold text-indigo-300 bg-indigo-500/10 border border-indigo-500/20">
@@ -66,24 +61,15 @@ const EventCard = ({ event, onView }) => {
 
         {/* EVENT INFORMATION */}
         <div className="space-y-3">
-
           <div className="flex items-start gap-3 text-sm text-gray-300">
-            <FiCalendar
-              size={17}
-              className="text-indigo-400 shrink-0 mt-0.5"
-            />
+            <FiCalendar size={17} className="text-indigo-400 shrink-0 mt-0.5" />
 
-            <span>
-              {formatEventDate(event.eventDate)}
-            </span>
+            <span>{formatEventDate(event.eventDate)}</span>
           </div>
 
           <div className="flex items-start gap-3 text-sm text-gray-300">
             {online ? (
-              <FiVideo
-                size={17}
-                className="text-purple-400 shrink-0 mt-0.5"
-              />
+              <FiVideo size={17} className="text-purple-400 shrink-0 mt-0.5" />
             ) : (
               <FiMapPin
                 size={17}
@@ -97,14 +83,9 @@ const EventCard = ({ event, onView }) => {
           </div>
 
           <div className="flex items-center gap-3 text-sm text-gray-300">
-            <FiUsers
-              size={17}
-              className="text-indigo-400 shrink-0"
-            />
+            <FiUsers size={17} className="text-indigo-400 shrink-0" />
 
-            <span>
-              Capacity: {event.maxParticipants} participants
-            </span>
+            <span>Capacity: {event.maxParticipants} participants</span>
           </div>
         </div>
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   FiX,
@@ -11,9 +10,7 @@ import {
 } from "react-icons/fi";
 
 import toast from "react-hot-toast";
-
 import api from "../../services/api";
-
 import EventAgenda from "./EventAgenda";
 
 import {
@@ -58,30 +55,20 @@ const CreateEventModal = ({ onClose, onCreated }) => {
     }
 
     // ONLINE EVENT VALIDATION
-    if (
-      form.mode === "Online" &&
-      !form.meetingLink.trim()
-    ) {
+    if (form.mode === "Online" && !form.meetingLink.trim()) {
       toast.error("Please enter a meeting link.");
       return;
     }
 
     // OFFLINE EVENT VALIDATION
-    if (
-      form.mode === "Offline" &&
-      !form.location.trim()
-    ) {
+    if (form.mode === "Offline" && !form.location.trim()) {
       toast.error("Please enter the event venue.");
       return;
     }
 
     const capacity = Number(form.maxParticipants);
 
-    if (
-      !Number.isSafeInteger(capacity) ||
-      capacity < 1 ||
-      capacity > 10000
-    ) {
+    if (!Number.isSafeInteger(capacity) || capacity < 1 || capacity > 10000) {
       toast.error("Enter 1 to 10000 participants.");
       return;
     }
@@ -100,15 +87,9 @@ const CreateEventModal = ({ onClose, onCreated }) => {
 
       mode: form.mode,
 
-      location:
-        form.mode === "Online"
-          ? "Online"
-          : form.location.trim(),
+      location: form.mode === "Online" ? "Online" : form.location.trim(),
 
-      meetingLink:
-        form.mode === "Online"
-          ? form.meetingLink.trim()
-          : "",
+      meetingLink: form.mode === "Online" ? form.meetingLink.trim() : "",
 
       maxParticipants: capacity,
       agenda: cleanAgenda,
@@ -117,23 +98,16 @@ const CreateEventModal = ({ onClose, onCreated }) => {
     try {
       setSaving(true);
 
-      const { data } = await api.post(
-        "/events",
-        payload
-      );
+      const { data } = await api.post("/events", payload);
 
       toast.success("Event created successfully!");
 
       // Parent Events page will refresh event list
       onCreated?.(data);
-
     } catch (error) {
       console.error("Create Event error:", error);
 
-      toast.error(
-        error.response?.data?.message ||
-        "Failed to create event."
-      );
+      toast.error(error.response?.data?.message || "Failed to create event.");
     } finally {
       setSaving(false);
     }
@@ -141,21 +115,16 @@ const CreateEventModal = ({ onClose, onCreated }) => {
 
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Create New Event"
         className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#111827] border border-white/10 shadow-2xl"
       >
-
         {/* MODAL HEADER */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 bg-[#111827] border-b border-white/10 px-6 py-5">
-
           <div>
-            <h2 className="text-2xl font-bold text-white">
-              Create New Event
-            </h2>
+            <h2 className="text-2xl font-bold text-white">Create New Event</h2>
 
             <p className="text-sm text-gray-400 mt-1">
               Organize a learning or collaboration event.
@@ -174,11 +143,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
         </div>
 
         {/* EVENT FORM */}
-        <form
-          onSubmit={handleSubmit}
-          className="p-6 space-y-6"
-        >
-
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* EVENT TITLE */}
           <div>
             <label
@@ -194,9 +159,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               required
               maxLength={150}
               value={form.title}
-              onChange={(e) =>
-                updateField("title", e.target.value)
-              }
+              onChange={(e) => updateField("title", e.target.value)}
               placeholder="React Learning Workshop"
               className={EVENT_INPUT_CLASS}
             />
@@ -217,9 +180,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               rows={4}
               maxLength={2000}
               value={form.description}
-              onChange={(e) =>
-                updateField("description", e.target.value)
-              }
+              onChange={(e) => updateField("description", e.target.value)}
               placeholder="What will participants learn?"
               className={`${EVENT_INPUT_CLASS} resize-none`}
             />
@@ -227,7 +188,6 @@ const CreateEventModal = ({ onClose, onCreated }) => {
 
           {/* CATEGORY & MODE */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
             <div>
               <label
                 htmlFor="event-category"
@@ -239,16 +199,11 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               <select
                 id="event-category"
                 value={form.category}
-                onChange={(e) =>
-                  updateField("category", e.target.value)
-                }
+                onChange={(e) => updateField("category", e.target.value)}
                 className={EVENT_INPUT_CLASS}
               >
                 {EVENT_CATEGORIES.map((category) => (
-                  <option
-                    key={category}
-                    value={category}
-                  >
+                  <option key={category} value={category}>
                     {category}
                   </option>
                 ))}
@@ -266,9 +221,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               <select
                 id="event-mode"
                 value={form.mode}
-                onChange={(e) =>
-                  handleModeChange(e.target.value)
-                }
+                onChange={(e) => handleModeChange(e.target.value)}
                 className={EVENT_INPUT_CLASS}
               >
                 {EVENT_MODES.map((mode) => (
@@ -295,9 +248,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               type="datetime-local"
               required
               value={form.eventDate}
-              onChange={(e) =>
-                updateField("eventDate", e.target.value)
-              }
+              onChange={(e) => updateField("eventDate", e.target.value)}
               className={`${EVENT_INPUT_CLASS} scheme-dark`}
             />
 
@@ -322,9 +273,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
                 type="url"
                 required
                 value={form.meetingLink}
-                onChange={(e) =>
-                  updateField("meetingLink", e.target.value)
-                }
+                onChange={(e) => updateField("meetingLink", e.target.value)}
                 placeholder="https://meet.google.com/..."
                 className={EVENT_INPUT_CLASS}
               />
@@ -348,9 +297,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
                 type="text"
                 required
                 value={form.location}
-                onChange={(e) =>
-                  updateField("location", e.target.value)
-                }
+                onChange={(e) => updateField("location", e.target.value)}
                 placeholder="Dhaka University, Dhaka"
                 className={EVENT_INPUT_CLASS}
               />
@@ -379,9 +326,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               step={1}
               required
               value={form.maxParticipants}
-              onChange={(e) =>
-                updateField("maxParticipants", e.target.value)
-              }
+              onChange={(e) => updateField("maxParticipants", e.target.value)}
               className={EVENT_INPUT_CLASS}
             />
           </div>
@@ -390,15 +335,12 @@ const CreateEventModal = ({ onClose, onCreated }) => {
           <div className="border-t border-white/10 pt-5">
             <EventAgenda
               agenda={form.agenda}
-              onChange={(updatedAgenda) =>
-                updateField("agenda", updatedAgenda)
-              }
+              onChange={(updatedAgenda) => updateField("agenda", updatedAgenda)}
             />
           </div>
 
           {/* FORM FOOTER */}
           <div className="border-t border-white/10 pt-5 space-y-3">
-
             <button
               type="submit"
               disabled={saving}
@@ -420,7 +362,6 @@ const CreateEventModal = ({ onClose, onCreated }) => {
             <p className="text-xs text-center text-gray-500">
               Login is required to create an event.
             </p>
-
           </div>
         </form>
       </div>
