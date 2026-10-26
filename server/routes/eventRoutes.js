@@ -7,6 +7,7 @@ const {
   getEventById,
   joinEvent,
   leaveEvent,
+  getMyEvents,
 } = require("../controllers/eventController");
 
 const {
@@ -16,7 +17,6 @@ const {
 const router = express.Router();
 
 // OPTIONAL AUTHENTICATION
-// Public visitors may view event details.
 // If a Bearer token is supplied, verify it using
 // the existing authentication middleware.
 const optionalProtect = (req, res, next) => {
@@ -42,6 +42,9 @@ router.post("/", protect, createEvent);
 
 // EVENT LIST - PUBLIC
 router.get("/", getEvents);
+
+// MY EVENTS - LOGIN REQUIRED
+router.get("/mine", protect, getMyEvents);
 
 // EVENT DETAILS - OPTIONAL AUTH
 router.get("/:id", optionalProtect, getEventById);

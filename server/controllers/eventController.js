@@ -312,10 +312,75 @@ const leaveEvent = async (req, res) => {
   }
 };
 
+// GET MY EVENTS
+const getMyEvents = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const type = req.query.type || "created";
+    const page = Number(req.query.page || 1);
+    const limit = 6;
+
+    // Validate query parameters
+    if (!["created", "joined"].includes(type)) {
+      return res.status(400).json({
+        message: "Invalid event type",
+      });
+    }
+
+    if (
+      !Number.isSafeInteger(page) ||
+      page < 1
+    ) {
+      return res.status(400).json({
+        message: "Invalid page number",
+      });
+    }
+
+    // Query MongoDB using authenticated user ID
+    const filter =
+      type === "created"
+        ? { organizer: userId }
+        : { participants: userId };
+
+    const totalEvents = await Event.countDocuments(
+      filter
+    );
+
+    const events = await Event.find(filter)
+      .select("-meetingLink -participants")
+      .populate("organizer", "name")
+      .sort(
+        type === "created"
+          ? { createdAt: -1 }
+          : { eventDate: 1 }
+      )
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    return res.status(200).json({
+      events,
+      type,
+      page,
+      pages: Math.ceil(totalEvents / limit),
+      totalEvents,
+    });
+  } catch (error) {
+    console.error("Get My Events error:", error);
+
+    return res.status(500).json({
+      message: "Failed to fetch your events",
+    });
+  }
+};
+
+
 module.exports = {
   createEvent,
   getEvents,
   getEventById,
   joinEvent,
   leaveEvent,
+  getMyEvents,
 };
