@@ -15,19 +15,39 @@ const {
 
 const router = express.Router();
 
-// CREATE EVENT
+// OPTIONAL AUTHENTICATION
+// Public visitors may view event details.
+// If a Bearer token is supplied, verify it using
+// the existing authentication middleware.
+const optionalProtect = (req, res, next) => {
+  const authorization = req.headers.authorization || "";
+
+  if (!authorization) {
+    return next();
+  }
+
+  // If an auth header is supplied, it must be
+  // a valid Bearer token.
+  if (!/^Bearer\s+\S+$/i.test(authorization)) {
+    return res.status(401).json({
+      message: "Invalid authorization header",
+    });
+  }
+
+  return protect(req, res, next);
+};
+
+// CREATE EVENT - LOGIN REQUIRED
 router.post("/", protect, createEvent);
 
-// VIEW ALL EVENTS
+// EVENT LIST - PUBLIC
 router.get("/", getEvents);
 
-// VIEW SINGLE EVENT
-router.get("/:id", getEventById);
+// EVENT DETAILS - OPTIONAL AUTH
+router.get("/:id", optionalProtect, getEventById);
 
-// JOIN EVENT
+// JOIN / LEAVE - LOGIN REQUIRED
 router.put("/:id/join", protect, joinEvent);
-
-// LEAVE EVENT
 router.put("/:id/leave", protect, leaveEvent);
 
 module.exports = router;

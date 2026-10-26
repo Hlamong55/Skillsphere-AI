@@ -119,7 +119,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
         role="dialog"
         aria-modal="true"
         aria-label="Create New Event"
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#111827] border border-white/10 shadow-2xl"
+        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#111827] border border-white/10 shadow-2xl"
       >
         {/* MODAL HEADER */}
         <div className="sticky top-0 z-10 flex items-center justify-between gap-4 bg-[#111827] border-b border-white/10 px-6 py-5">
@@ -160,7 +160,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
               maxLength={150}
               value={form.title}
               onChange={(e) => updateField("title", e.target.value)}
-              placeholder="React Learning Workshop"
+              placeholder="Name of the Event"
               className={EVENT_INPUT_CLASS}
             />
           </div>
@@ -298,7 +298,7 @@ const CreateEventModal = ({ onClose, onCreated }) => {
                 required
                 value={form.location}
                 onChange={(e) => updateField("location", e.target.value)}
-                placeholder="Dhaka University, Dhaka"
+                placeholder="Write Detailed Location"
                 className={EVENT_INPUT_CLASS}
               />
 

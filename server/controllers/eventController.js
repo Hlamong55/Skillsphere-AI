@@ -176,20 +176,12 @@ const getEvents = async (req, res) => {
 };
 
 // GET SINGLE EVENT
+
 const getEventById = async (req, res) => {
   try {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(400).json({
-        message: "Invalid event ID",
-      });
-    }
-
     const event = await Event.findById(req.params.id)
-      .populate(
-        "organizer",
-        "name username profilePicture"
-      )
-      .select("-meetingLink");
+      .populate("organizer", "name")
+      .lean();
 
     if (!event) {
       return res.status(404).json({
@@ -197,10 +189,45 @@ const getEventById = async (req, res) => {
       });
     }
 
+    const currentUserId = req.user?._id?.toString();
+
+    const organizerId = event.organizer?._id?.toString();
+
+    // Check whether requester is the organizer
+    const isOrganizer = Boolean(
+      currentUserId &&
+      organizerId === currentUserId
+    );
+
+    // Check whether requester has joined this event
+    const isParticipant = Boolean(
+      currentUserId &&
+      event.participants?.some(
+        (participantId) =>
+          participantId.toString() === currentUserId
+      )
+    );
+
+    // Never expose the meeting URL without authorization
+    const canViewMeetingLink =
+      isOrganizer || isParticipant;
+
+    if (!canViewMeetingLink) {
+      delete event.meetingLink;
+    }
+
     return res.status(200).json(event);
   } catch (error) {
+    console.error("Get event details error:", error);
+
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid event ID",
+      });
+    }
+
     return res.status(500).json({
-      message: error.message,
+      message: "Failed to get event details",
     });
   }
 };

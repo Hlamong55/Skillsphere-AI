@@ -69,7 +69,7 @@ const EventCard = ({ event, onView }) => {
 
           <div className="flex items-start gap-3 text-sm text-gray-300">
             {online ? (
-              <FiVideo size={17} className="text-purple-400 shrink-0 mt-0.5" />
+              <FiVideo size={17} className="text-pink-400 shrink-0 mt-0.5" />
             ) : (
               <FiMapPin
                 size={17}

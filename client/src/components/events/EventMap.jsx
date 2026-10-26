@@ -20,10 +20,6 @@ const EventMap = ({ location }) => {
         </h3>
       </div>
 
-      <p className="text-sm text-gray-300">
-        {location}
-      </p>
-
       <div className="w-full aspect-video rounded-2xl overflow-hidden border border-white/10 bg-[#0B1120]">
         <iframe
           title={`Map of ${location}`}
@@ -38,16 +34,11 @@ const EventMap = ({ location }) => {
         href={getEventMapsUrl(location)}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 text-indigo-300 hover:text-indigo-200 text-sm transition-colors"
+        className="inline-flex items-center gap-2 text-indigo-300 hover:text-indigo-200  transition-colors"
       >
         <FiExternalLink />
         Open in Google Maps
       </a>
-
-      <p className="text-xs text-gray-500">
-        Map location is based on a place-name search.
-        Verify the venue address before attending.
-      </p>
     </section>
   );
 };

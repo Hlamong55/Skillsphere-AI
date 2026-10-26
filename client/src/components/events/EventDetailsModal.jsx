@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 import {
@@ -13,6 +12,8 @@ import {
   FiLoader,
   FiAlertCircle,
   FiLogIn,
+  FiExternalLink,
+  FiLock
 } from "react-icons/fi";
 
 import toast from "react-hot-toast";
@@ -28,11 +29,7 @@ import {
   getEventSeats,
 } from "../../utils/eventHelpers";
 
-const EventDetailsModal = ({
-  eventId,
-  onClose,
-  onUpdated,
-}) => {
+const EventDetailsModal = ({ eventId, onClose, onUpdated }) => {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,10 +48,9 @@ const EventDetailsModal = ({
       setError("");
 
       try {
-        const { data } = await api.get(
-          `/events/${eventId}`,
-          { signal: controller.signal }
-        );
+        const { data } = await api.get(`/events/${eventId}`, {
+          signal: controller.signal,
+        });
 
         if (!controller.signal.aborted) {
           setEvent(data.event || data);
@@ -62,8 +58,7 @@ const EventDetailsModal = ({
       } catch (err) {
         if (!controller.signal.aborted) {
           setError(
-            err.response?.data?.message ||
-            "Could not load event details."
+            err.response?.data?.message || "Could not load event details.",
           );
         }
       } finally {
@@ -79,21 +74,13 @@ const EventDetailsModal = ({
   }, [eventId]);
 
   // DERIVED EVENT INFORMATION
-  const organizer = isEventOrganizer(
-    event,
-    currentUserId
-  );
+  const organizer = isEventOrganizer(event, currentUserId);
 
-  const joined = isEventParticipant(
-    event,
-    currentUserId
-  );
+  const joined = isEventParticipant(event, currentUserId);
 
   const seats = getEventSeats(event);
 
-  const upcoming = event
-    ? isUpcomingEvent(event.eventDate)
-    : false;
+  const upcoming = event ? isUpcomingEvent(event.eventDate) : false;
 
   // JOIN / LEAVE
   const handleParticipation = async () => {
@@ -109,35 +96,28 @@ const EventDetailsModal = ({
     setWorking(true);
 
     try {
-      await api.put(
-        `/events/${eventId}/${action}`
-      );
+      await api.put(`/events/${eventId}/${action}`);
 
       // Fetch updated participant list from backend
-      const { data } = await api.get(
-        `/events/${eventId}`
-      );
+      const { data } = await api.get(`/events/${eventId}`);
 
       setEvent(data.event || data);
 
       toast.success(
         action === "join"
           ? "Successfully joined the event!"
-          : "Successfully left the event!"
+          : "Successfully left the event!",
       );
 
       onUpdated?.();
     } catch (err) {
       toast.error(
-        err.response?.data?.message ||
-        "Unable to update event participation."
+        err.response?.data?.message || "Unable to update event participation.",
       );
 
       // Try to sync latest state after a failed request
       try {
-        const { data } = await api.get(
-          `/events/${eventId}`
-        );
+        const { data } = await api.get(`/events/${eventId}`);
 
         setEvent(data.event || data);
       } catch {
@@ -149,20 +129,16 @@ const EventDetailsModal = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-md p-4"
-    >
+    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Event Details"
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#111827] border border-white/10 shadow-2xl"
+        className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl bg-[#111827] border border-white/10 shadow-2xl"
       >
         {/* HEADER */}
         <div className="sticky top-0 z-10 bg-[#111827] border-b border-white/10 px-6 py-5 flex justify-between items-center gap-3">
-          <h2 className="text-xl font-bold text-white">
-            Event Details
-          </h2>
+          <h2 className="text-xl font-bold text-white">Event Details</h2>
 
           <button
             type="button"
@@ -189,9 +165,7 @@ const EventDetailsModal = ({
             {error}
           </div>
         ) : !event ? (
-          <p className="py-20 text-center text-gray-400">
-            Event not found.
-          </p>
+          <p className="py-20 text-center text-gray-400">Event not found.</p>
         ) : (
           <div className="p-6 space-y-6">
             {/* TITLE AND STATUS */}
@@ -250,37 +224,65 @@ const EventDetailsModal = ({
               </div>
             </section>
 
-            {/* ONLINE / OFFLINE INFORMATION */}
-            <section className="flex items-start gap-3">
-              {event.mode === "Online" ? (
-                <FiVideo
-                  size={20}
-                  className="text-purple-400 shrink-0 mt-1"
-                />
-              ) : (
+            {/* LOCATION INFORMATION - OFFLINE ONLY */}
+            {event.mode === "Offline" && (
+              <section className="flex items-start gap-3">
                 <FiMapPin
                   size={20}
                   className="text-emerald-400 shrink-0 mt-1"
                 />
-              )}
 
-              <div>
-                <h4 className="font-semibold text-white">
-                  {event.mode} Event
-                </h4>
+                <div>
+                  <h4 className="font-semibold text-white">Offline Event</h4>
 
-                <p className="text-sm text-gray-400 mt-1">
-                  {event.mode === "Online"
-                    ? "This event will take place online."
-                    : event.location}
-                </p>
-              </div>
-            </section>
+                  <p className=" text-gray-400 mt-1.5">{event.location}</p>
+                </div>
+              </section>
+            )}
+
+            {/* SECURE ONLINE MEETING LINK */}
+            {event.mode === "Online" && (
+              <section className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="shrink-0 rounded-xl bg-purple-500/10 p-3">
+                  <FiVideo size={22} className="text-purple-400" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-base font-semibold text-white">
+                    Online Meeting
+                  </h4>
+
+                  {event.meetingLink && (organizer || joined) ? (
+                    <p className="text-sm text-emerald-400 mt-1">
+                      Meeting link unlocked
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-400 mt-1">
+                      {organizer || joined
+                        ? "Meeting link is currently unavailable."
+                        : "Join this event to unlock the meeting link."}
+                    </p>
+                  )}
+                </div>
+
+                {event.meetingLink && (organizer || joined) ? (
+                  <a
+                    href={event.meetingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 transition"
+                  >
+                    <FiExternalLink />
+                    <span>Join</span>
+                  </a>
+                ) : (
+                  <FiLock size={18} className="shrink-0 text-gray-500" />
+                )}
+              </section>
+            )}
 
             {/* GOOGLE MAPS FOR OFFLINE EVENT */}
-            {event.mode === "Offline" && (
-              <EventMap location={event.location} />
-            )}
+            {event.mode === "Offline" && <EventMap location={event.location} />}
 
             {/* AGENDA */}
             {event.agenda?.length > 0 && (
@@ -300,9 +302,7 @@ const EventDetailsModal = ({
                         {index + 1}.
                       </span>
 
-                      <p className="wrap-break-word">
-                        {topic}
-                      </p>
+                      <p className="wrap-break-word">{topic}</p>
                     </div>
                   ))}
                 </div>
@@ -317,13 +317,10 @@ const EventDetailsModal = ({
                 </div>
 
                 <div>
-                  <p className="text-xs text-gray-500">
-                    Organized by
-                  </p>
+                  <p className="text-xs text-gray-500">Organized by</p>
 
                   <p className="text-sm text-white font-semibold">
-                    {event.organizer?.name ||
-                      "Unknown Organizer"}
+                    {event.organizer?.name || "Unknown Organizer"}
                   </p>
                 </div>
               </div>
@@ -354,10 +351,7 @@ const EventDetailsModal = ({
                 <button
                   type="button"
                   onClick={handleParticipation}
-                  disabled={
-                    working ||
-                    (!joined && (!upcoming || seats.isFull))
-                  }
+                  disabled={working || (!joined && (!upcoming || seats.isFull))}
                   className={`w-full flex justify-center items-center gap-2 rounded-xl py-3.5 font-semibold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
                     joined
                       ? "bg-red-500/80 hover:bg-red-500"
