@@ -11,6 +11,11 @@ const {
 } = require("../controllers/eventController");
 
 const {
+  updateEvent,
+  deleteEvent,
+} = require("../controllers/eventManageController");
+
+const {
   protect,
 } = require("../middleware/authMiddleware");
 
@@ -52,5 +57,9 @@ router.get("/:id", optionalProtect, getEventById);
 // JOIN / LEAVE - LOGIN REQUIRED
 router.put("/:id/join", protect, joinEvent);
 router.put("/:id/leave", protect, leaveEvent);
+
+// EDIT / DELETE - ORGANIZER ONLY
+router.put("/:id", protect, updateEvent);
+router.delete("/:id", protect, deleteEvent);
 
 module.exports = router;
