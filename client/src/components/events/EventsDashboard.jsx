@@ -10,30 +10,24 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 
+import toast from "react-hot-toast";
+import api from "../../services/api";
+
 import useMyEvents from "../../hooks/useMyEvents";
 import EventCard from "./EventCard";
 
 const EventsDashboard = ({
   onView,
+  onEdit,
+  onDelete,
   refreshKey = 0,
 }) => {
   const [activeTab, setActiveTab] = useState("created");
 
-  // Mount only the selected tab's data.
-  // This avoids fetching the inactive tab unnecessarily.
   return (
     <section className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white">
-          My Events
-        </h2>
 
-        <p className="text-sm text-gray-400 mt-2">
-          Manage the events you organize and attend.
-        </p>
-      </div>
-
-      {/* TABS */}
+      {/* DASHBOARD TABS */}
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
@@ -62,18 +56,26 @@ const EventsDashboard = ({
         </button>
       </div>
 
-      {/* ACTIVE TAB CONTENT */}
+      {/* ACTIVE TAB */}
       <MyEventsTab
         key={`${activeTab}-${refreshKey}`}
         type={activeTab}
         onView={onView}
+        onEdit={onEdit}
+        onDelete={onDelete}
       />
+
     </section>
   );
 };
 
-// Reusable tab content
-const MyEventsTab = ({ type, onView }) => {
+// REUSABLE TAB CONTENT
+const MyEventsTab = ({
+  type,
+  onView,
+  onEdit,
+  onDelete,
+}) => {
   const {
     events,
     page,
@@ -82,7 +84,40 @@ const MyEventsTab = ({ type, onView }) => {
     loading,
     error,
     changePage,
+    refresh,
   } = useMyEvents(type);
+
+  const [leavingId, setLeavingId] = useState(null);
+
+  const handleLeave = async (event) => {
+    if (leavingId) return;
+
+    setLeavingId(event._id);
+
+    try {
+      await api.put(`/events/${event._id}/leave`);
+
+      toast.success("Successfully left the event!");
+
+      // If the last card on a later page was removed,
+      // return to the previous page.
+      if (events.length === 1 && page > 1) {
+        changePage(page - 1);
+      } else {
+        refresh();
+      }
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+        "Could not leave this event."
+      );
+    } finally {
+      setLeavingId(null);
+    }
+  };
+
+  const variant =
+    type === "created" ? "created" : "joined";
 
   const emptyMessage =
     type === "created"
@@ -91,6 +126,8 @@ const MyEventsTab = ({ type, onView }) => {
 
   return (
     <div className="space-y-5">
+
+      {/* TOTAL COUNT */}
       {!loading && !error && (
         <p className="text-sm text-gray-400">
           {totalEvents}{" "}
@@ -99,11 +136,13 @@ const MyEventsTab = ({ type, onView }) => {
         </p>
       )}
 
+      {/* LOADING */}
       {loading ? (
         <div className="flex items-center justify-center gap-3 py-20 text-indigo-300">
           <FiLoader className="animate-spin" />
           Loading your events...
         </div>
+
       ) : error ? (
         <div
           role="alert"
@@ -112,8 +151,10 @@ const MyEventsTab = ({ type, onView }) => {
           <FiAlertCircle />
           {error}
         </div>
+
       ) : events.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-[#111827] px-6 py-16 text-center">
+
           <FiCalendar
             size={40}
             className="mx-auto mb-4 text-indigo-400"
@@ -126,22 +167,36 @@ const MyEventsTab = ({ type, onView }) => {
           <p className="text-sm text-gray-400 mt-2">
             {emptyMessage}
           </p>
+
         </div>
+
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+
           {events.map((event) => (
             <EventCard
               key={event._id}
               event={event}
+              variant={variant}
               onView={onView}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onLeave={
+                type === "joined"
+                  ? handleLeave
+                  : undefined
+              }
+              actionLoading={leavingId === event._id}
             />
           ))}
+
         </div>
       )}
 
       {/* PAGINATION */}
       {!loading && !error && totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 pt-4">
+
           <button
             type="button"
             disabled={page <= 1}
@@ -165,6 +220,7 @@ const MyEventsTab = ({ type, onView }) => {
             Next
             <FiChevronRight />
           </button>
+
         </div>
       )}
     </div>

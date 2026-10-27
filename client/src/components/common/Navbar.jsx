@@ -9,7 +9,6 @@ import {
 } from "react-router-dom";
 
 import {
-  FiHome,
   FiGrid,
   FiSearch,
   FiUser,
@@ -27,7 +26,6 @@ import EventsNavDropdown from "./EventsNavDropdown";
 
 // Events is handled separately through dropdown
 const navItems = [
-  { label: "Home", path: "/", icon: FiHome },
   { label: "Feed", path: "/feed", icon: FiGrid },
   { label: "Explore", path: "/search", icon: FiSearch },
   { label: "Learn", path: "/resources", icon: FiBookOpen },

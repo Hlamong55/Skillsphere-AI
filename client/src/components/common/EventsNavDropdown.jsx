@@ -162,7 +162,7 @@ const EventsNavDropdown = ({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-3 w-60 rounded-2xl border border-white/10 bg-[#111827] p-2 shadow-2xl">
+        <div className="absolute top-full z-50 mt-3 w-60 rounded-2xl border border-white/20 bg-[#111827] p-2 shadow-2xl">
 
           <NavLink
             to="/events?view=all"
