@@ -1,6 +1,6 @@
-
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+
 import {
   FiCalendar,
   FiPlus,
@@ -12,20 +12,28 @@ import useEvents from "../hooks/useEvents";
 
 import EventList from "../components/events/EventList";
 import EventFilters from "../components/events/EventFilters";
-import CreateEventModal from "../components/events/CreateEventModal";
-import EventDetailsModal from "../components/events/EventDetailsModal";
 import EventsDashboard from "../components/events/EventsDashboard";
 
+import CreateEventModal from "../components/events/CreateEventModal";
+import EventDetailsModal from "../components/events/EventDetailsModal";
+
+// NEW MODALS
+import EditEventModal from "../components/events/EditEventModal";
+import DeleteEventModal from "../components/events/DeleteEventModal";
+
 const Events = () => {
+  // ========================================
   // URL-BASED NAVIGATION
+  // ========================================
+
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const activeView =
-    searchParams.get("view") === "mine"
-      ? "mine"
-      : "all";
+  const activeView = searchParams.get("view") === "mine" ? "mine" : "all";
 
-  // ALL EVENTS API STATE
+  // ========================================
+  // ALL EVENTS DATA
+  // ========================================
+
   const {
     events,
     category,
@@ -41,80 +49,136 @@ const Events = () => {
     refreshEvents,
   } = useEvents();
 
-  // SEARCH - CURRENT PAGE ONLY
+  // ========================================
+  // SEARCH
+  // ========================================
+
   const [search, setSearch] = useState("");
 
-  // MODAL STATES
-  const [showCreate, setShowCreate] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-
-  // MY EVENTS DASHBOARD REFRESH
-  const [
-    dashboardRefreshKey,
-    setDashboardRefreshKey,
-  ] = useState(0);
-
-  const refreshDashboard = () => {
-    setDashboardRefreshKey(
-      (previous) => previous + 1
-    );
-  };
-
-  // FILTER EVENTS ON CURRENT API PAGE
   const visibleEvents = useMemo(() => {
     const keyword = search.trim().toLowerCase();
 
     if (!keyword) return events;
 
     return events.filter((event) => {
-      const title =
-        event.title?.toLowerCase() || "";
+      const title = event.title?.toLowerCase() || "";
 
-      const description =
-        event.description?.toLowerCase() || "";
+      const description = event.description?.toLowerCase() || "";
 
-      return (
-        title.includes(keyword) ||
-        description.includes(keyword)
-      );
+      return title.includes(keyword) || description.includes(keyword);
     });
   }, [events, search]);
 
-  // AFTER EVENT CREATION
+  // ========================================
+  // MODAL STATES
+  // ========================================
+
+  const [showCreate, setShowCreate] = useState(false);
+
+  const [selectedEvent, setSelectedEvent] = useState(null);
+
+  // NEW: EDIT AND DELETE STATES
+  const [editingEventId, setEditingEventId] = useState(null);
+
+  const [deletingEventId, setDeletingEventId] = useState(null);
+
+  // ========================================
+  // DASHBOARD REFRESH
+  // ========================================
+
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
+
+  const refreshDashboard = () => {
+    setDashboardRefreshKey((previous) => previous + 1);
+  };
+
+  // Refresh All Events and My Events
+  const refreshAllEventData = () => {
+    refreshEvents();
+    refreshDashboard();
+  };
+
+  // CREATE EVENT
+
   const handleEventCreated = () => {
     setShowCreate(false);
 
-    // Navigate to My Events via URL
+    // Navigate to My Events
     setSearchParams({
       view: "mine",
     });
 
-    refreshDashboard();
-    refreshEvents();
+    refreshAllEventData();
   };
 
-  // AFTER JOIN / LEAVE
-  const handleParticipationUpdated = () => {
-    refreshEvents();
-    refreshDashboard();
+  // VIEW EVENT DETAILS
+
+  const handleViewEvent = (eventId) => {
+    setSelectedEvent(eventId);
   };
 
-  // CLOSE EVENT DETAILS
   const handleCloseDetails = () => {
     setSelectedEvent(null);
 
-    refreshEvents();
-    refreshDashboard();
+    refreshAllEventData();
   };
+
+  // JOIN / LEAVE UPDATE
+
+  const handleParticipationUpdated = () => {
+    refreshAllEventData();
+  };
+
+  // EDIT EVENT
+
+  const handleEditEvent = (event) => {
+    if (!event?._id) return;
+
+    setEditingEventId(event._id);
+  };
+
+  const handleEditUpdated = () => {
+    // Close Edit Modal
+    setEditingEventId(null);
+
+    // Refresh both Event lists
+    refreshAllEventData();
+  };
+
+  const handleCloseEdit = () => {
+    setEditingEventId(null);
+  };
+
+  // DELETE EVENT
+
+  const handleDeleteEvent = (event) => {
+    if (!event?._id) return;
+
+    setDeletingEventId(event._id);
+  };
+
+  const handleEventDeleted = () => {
+    // Close Delete Modal
+    setDeletingEventId(null);
+
+    // Refresh both Event lists
+    refreshAllEventData();
+  };
+
+  const handleCloseDelete = () => {
+    setDeletingEventId(null);
+  };
+
+  // MAIN UI
 
   return (
     <main className="min-h-screen bg-[#0B1120] text-white">
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
+        {/* ==================================
+            PAGE HEADER
+        ================================== */}
 
-        {/* PAGE HEADER */}
         <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-9">
-
           <div>
             <div className="flex items-center gap-2 text-indigo-400 text-sm font-semibold mb-2">
               <FiCalendar size={18} />
@@ -122,9 +186,7 @@ const Events = () => {
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white">
-              {activeView === "mine"
-                ? "My Events"
-                : "Events & Collaboration"}
+              {activeView === "mine" ? "My Events" : "Events & Collaboration"}
             </h1>
 
             <p className="text-gray-400 mt-3">
@@ -134,7 +196,8 @@ const Events = () => {
             </p>
           </div>
 
-          {/* CREATE EVENT */}
+          {/* CREATE EVENT BUTTON */}
+
           <button
             type="button"
             onClick={() => setShowCreate(true)}
@@ -145,11 +208,14 @@ const Events = () => {
           </button>
         </header>
 
-        {/* ALL EVENTS VIEW */}
+        {/* ==================================
+            EXPLORE EVENTS VIEW
+        ================================== */}
+
         {activeView === "all" && (
           <section>
+            {/* SEARCH AND FILTERS */}
 
-            {/* SEARCH & FILTERS */}
             <EventFilters
               search={search}
               onSearchChange={setSearch}
@@ -160,40 +226,39 @@ const Events = () => {
             />
 
             {/* EVENT COUNT */}
+
             {!loading && !error && (
               <p className="mb-5 text-sm text-gray-400">
                 Showing {visibleEvents.length} event
-                {visibleEvents.length !== 1 ? "s" : ""}
-                {" "}on this page
-
+                {visibleEvents.length !== 1 ? "s" : ""} on this page
                 {totalEvents > 0 && (
                   <span className="text-gray-500">
-                    {" "}· {totalEvents} total matching
-                    category/date filters
+                    {" "}
+                    · {totalEvents} total matching category/date filters
                   </span>
                 )}
               </p>
             )}
 
-            {/* REUSABLE EVENT LIST */}
+            {/* EXPLORE EVENT CARDS */}
+
             <EventList
               events={visibleEvents}
               loading={loading}
               error={error}
-              onView={setSelectedEvent}
+              variant="explore"
+              onView={handleViewEvent}
             />
 
             {/* PAGINATION */}
+
             {!loading && !error && totalPages > 1 && (
               <div className="flex flex-wrap justify-center items-center gap-4 mt-10">
-
                 <button
                   type="button"
                   disabled={page <= 1}
                   onClick={() =>
-                    setPage((previous) =>
-                      Math.max(1, previous - 1)
-                    )
+                    setPage((previous) => Math.max(1, previous - 1))
                   }
                   className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm disabled:opacity-30"
                 >
@@ -209,32 +274,37 @@ const Events = () => {
                   type="button"
                   disabled={page >= totalPages}
                   onClick={() =>
-                    setPage((previous) =>
-                      Math.min(totalPages, previous + 1)
-                    )
+                    setPage((previous) => Math.min(totalPages, previous + 1))
                   }
                   className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm disabled:opacity-30"
                 >
                   Next
                   <FiChevronRight />
                 </button>
-
               </div>
             )}
           </section>
         )}
 
-        {/* MY EVENTS DASHBOARD */}
+        {/* ==================================
+            MY EVENTS DASHBOARD
+        ================================== */}
+
         {activeView === "mine" && (
           <EventsDashboard
-            onView={setSelectedEvent}
+            onView={handleViewEvent}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
+            onCreate={() => setShowCreate(true)}
             refreshKey={dashboardRefreshKey}
           />
         )}
-
       </div>
 
-      {/* CREATE EVENT MODAL */}
+      {/* ====================================
+          CREATE EVENT MODAL
+      ==================================== */}
+
       {showCreate && (
         <CreateEventModal
           onClose={() => setShowCreate(false)}
@@ -242,7 +312,10 @@ const Events = () => {
         />
       )}
 
-      {/* EVENT DETAILS / JOIN / LEAVE */}
+      {/* ====================================
+          EVENT DETAILS MODAL
+      ==================================== */}
+
       {selectedEvent && (
         <EventDetailsModal
           eventId={selectedEvent}
@@ -251,6 +324,29 @@ const Events = () => {
         />
       )}
 
+      {/* ====================================
+          EDIT EVENT MODAL
+      ==================================== */}
+
+      {editingEventId && (
+        <EditEventModal
+          eventId={editingEventId}
+          onClose={handleCloseEdit}
+          onUpdated={handleEditUpdated}
+        />
+      )}
+
+      {/* ====================================
+          DELETE EVENT MODAL
+      ==================================== */}
+
+      {deletingEventId && (
+        <DeleteEventModal
+          eventId={deletingEventId}
+          onClose={handleCloseDelete}
+          onDeleted={handleEventDeleted}
+        />
+      )}
     </main>
   );
 };

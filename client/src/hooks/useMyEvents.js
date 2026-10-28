@@ -2,8 +2,13 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 
-const useMyEvents = (type, enabled = true) => {
+const useMyEvents = (
+  type,
+  period = "upcoming",
+  enabled = true
+) => {
   const [events, setEvents] = useState([]);
+
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
@@ -13,9 +18,7 @@ const useMyEvents = (type, enabled = true) => {
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+    if (!enabled) return;
 
     const controller = new AbortController();
 
@@ -24,23 +27,37 @@ const useMyEvents = (type, enabled = true) => {
       setError("");
 
       try {
-        const { data } = await api.get("/events/mine", {
-          params: { type, page },
-          signal: controller.signal,
-        });
+        const { data } = await api.get(
+          "/events/mine",
+          {
+            params: {
+              type,
+              period,
+              page,
+            },
+            signal: controller.signal,
+          }
+        );
 
         if (controller.signal.aborted) return;
 
         setEvents(data.events || []);
         setTotalPages(data.pages || 0);
         setTotalEvents(data.totalEvents || 0);
+
       } catch (err) {
         if (controller.signal.aborted) return;
+
+        console.error(
+          "My Events fetch error:",
+          err
+        );
 
         setError(
           err.response?.data?.message ||
           "Could not load your events."
         );
+
       } finally {
         if (!controller.signal.aborted) {
           setLoading(false);
@@ -50,13 +67,24 @@ const useMyEvents = (type, enabled = true) => {
 
     fetchMyEvents();
 
-    return () => controller.abort();
-  }, [type, page, reloadKey, enabled]);
+    return () => {
+      controller.abort();
+    };
 
+  }, [
+    type,
+    period,
+    page,
+    reloadKey,
+    enabled,
+  ]);
+
+  // Refresh current list
   const refresh = () => {
-    setReloadKey((value) => value + 1);
+    setReloadKey((previous) => previous + 1);
   };
 
+  // Change page
   const changePage = (nextPage) => {
     setPage(nextPage);
   };
