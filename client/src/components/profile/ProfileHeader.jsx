@@ -90,23 +90,11 @@ const ProfileHeader = ({
   return (
     <>
       <div
-        className="
-          bg-white/3
-          border border-white/10
-          rounded-3xl
-          overflow-hidden
-          shadow-[0_10px_50px_rgba(0,0,0,0.4)]
-        "
+        className=" bg-white/3 border border-white/10 rounded-3xl overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.4)] "
       >
         {/* Cover */}
         <div
-          className="
-            h-72
-            bg-linear-to-r
-            from-indigo-600
-            via-purple-600
-            to-pink-600
-          "
+          className=" h-72 bg-linear-to-r from-indigo-600 via-purple-600 to-pink-600 "
         >
           {user?.coverPhoto && (
             <img
@@ -114,10 +102,7 @@ const ProfileHeader = ({
                 user.coverPhoto
               }
               alt=""
-              className="
-                w-full h-full
-                object-cover
-              "
+              className=" w-full h-full object-cover "
             />
           )}
         </div>
@@ -125,26 +110,10 @@ const ProfileHeader = ({
         <div className="px-8 pb-8">
           {/* Avatar */}
           <div
-            className="
-              -mt-20
-              mb-5
-            "
+            className=" -mt-20 mb-5 "
           >
             <div
-              className="
-                w-40 h-40
-                rounded-full
-                border-6
-                border-[#0B1120]
-                overflow-hidden
-                bg-linear-to-r
-                from-indigo-500
-                to-purple-500
-
-                flex
-                items-center
-                justify-center
-              "
+              className=" w-40 h-40 rounded-full border-6 border-[#0B1120] overflow-hidden bg-linear-to-r from-indigo-500 to-purple-500 flex items-center justify-center "
             >
               {user?.profilePicture ? (
                 <img
@@ -152,18 +121,11 @@ const ProfileHeader = ({
                     user.profilePicture
                   }
                   alt=""
-                  className="
-                    w-full h-full
-                    object-cover
-                  "
+                  className=" w-full h-full object-cover "
                 />
               ) : (
                 <span
-                  className="
-                    text-5xl
-                    font-bold
-                    text-white
-                  "
+                  className=" text-5xl font-bold text-white "
                 >
                   {user?.name?.charAt(
                     0
@@ -175,38 +137,23 @@ const ProfileHeader = ({
 
           {/* Info */}
           <div
-            className="
-              flex
-              justify-between
-              gap-6
-            "
+            className=" flex justify-between gap-6 "
           >
             <div>
               <h1
-                className="
-                  text-4xl
-                  font-bold
-                  text-white
-                "
+                className=" text-4xl font-bold text-white "
               >
                 {user?.name}
               </h1>
 
               <p
-                className="
-                  text-gray-400
-                  mt-1
-                "
+                className=" text-gray-400 mt-1 "
               >
                 @{user?.username}
               </p>
 
               <div
-                className="
-                  flex
-                  gap-6
-                  mt-4
-                "
+                className=" flex gap-6 mt-4 "
               >
                 <span className="text-gray-300">
                   <strong className="text-white">
@@ -232,12 +179,7 @@ const ProfileHeader = ({
               </div>
 
               <p
-                className="
-                  text-gray-300
-                  mt-5
-                  max-w-2xl
-                  leading-8
-                "
+                className=" text-gray-300 mt-5 max-w-2xl leading-8 "
               >
                 {user?.bio ||
                   "No bio added yet"}
@@ -245,11 +187,7 @@ const ProfileHeader = ({
 
               {/* Skills */}
               <div
-                className="
-                  flex flex-wrap
-                  gap-2
-                  mt-6
-                "
+                className=" flex flex-wrap gap-2 mt-6 "
               >
                 {user?.skills
                   ?.length > 0 ? (
@@ -260,14 +198,7 @@ const ProfileHeader = ({
                     ) => (
                       <span
                         key={index}
-                        className="
-                          px-4 py-2
-                          rounded-full
-                          bg-indigo-500/15
-                          border border-indigo-500/20
-                          text-indigo-300
-                          text-sm
-                        "
+                        className=" px-4 py-2 rounded-full bg-indigo-500/15 border border-indigo-500/20 text-indigo-300 text-sm "
                       >
                         {skill}
                       </span>
@@ -275,10 +206,7 @@ const ProfileHeader = ({
                   )
                 ) : (
                   <span
-                    className="
-                      text-gray-500
-                      text-sm
-                    "
+                    className=" text-gray-500 text-sm "
                   >
                     No skills added
                   </span>
@@ -294,25 +222,7 @@ const ProfileHeader = ({
                     true
                   )
                 }
-                className="
-                  h-fit
-                  flex items-center gap-2
-
-                  bg-linear-to-r
-                  from-indigo-500
-                  to-purple-500
-
-                  hover:scale-105
-
-                  transition-all duration-300
-
-                  px-5 py-3
-
-                  rounded-xl
-
-                  text-white
-                  font-semibold
-                "
+                className=" h-fit flex items-center gap-2 bg-linear-to-r from-indigo-500 to-purple-500 hover:scale-105 transition-all duration-300 px-5 py-3 rounded-xl text-white font-semibold"
               >
                 <FiEdit />
                 Edit Profile
@@ -324,15 +234,7 @@ const ProfileHeader = ({
                     ? handleUnfollow
                     : handleFollow
                 }
-                className={`
-                  h-fit
-                  px-6 py-3
-
-                  rounded-xl
-
-                  font-semibold
-
-                  transition-all duration-300
+                className={` h-fit px-6 py-3 rounded-xl font-semibold transition-all duration-300
 
                   ${
                     isFollowing
