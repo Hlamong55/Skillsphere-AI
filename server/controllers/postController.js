@@ -1,26 +1,98 @@
+
 const Post = require("../models/Post");
 
+// ========================================
+// IMAGE URL VALIDATION
+// ========================================
+
+const isValidImageUrl = (value) => {
+  if (value === "" || value == null) {
+    return true;
+  }
+
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  if (value.length > 2048) {
+    return false;
+  }
+
+  try {
+    const url = new URL(value);
+
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
+      Boolean(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+};
+
+// ========================================
 // CREATE POST
+// ========================================
+
 const createPost = async (req, res) => {
   try {
-    const { content, image, video } = req.body;
+    const { content, image, video } = req.body || {};
+
+    // Content validation
+    if (
+      typeof content !== "string" ||
+      !content.trim()
+    ) {
+      return res.status(400).json({
+        message: "Post content is required.",
+      });
+    }
+
+    // Accept persistent HTTP/HTTPS images,
+    // including images from our upload API.
+    // Reject temporary blob: and data: URLs.
+    const imageUrl = image ?? "";
+
+    if (!isValidImageUrl(imageUrl)) {
+      return res.status(400).json({
+        message: "Invalid image URL.",
+      });
+    }
+
+    // Existing video field preserved.
+    const videoUrl =
+      typeof video === "string"
+        ? video.trim()
+        : "";
 
     const post = await Post.create({
       user: req.user._id,
-      content,
-      image,
-      video,
+      content: content.trim(),
+      image: imageUrl.trim(),
+      video: videoUrl,
     });
 
-    res.status(201).json(post);
+    // Return author details for instant UI update.
+    await post.populate(
+      "user",
+      "name username profilePicture"
+    );
+
+    return res.status(201).json(post);
+
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    console.error("Create Post Error:", error);
+
+    return res.status(500).json({
+      message: "Failed to create post.",
     });
   }
 };
 
+// ========================================
 // GET ALL POSTS
+// ========================================
+
 const getPosts = async (req, res) => {
   try {
     const pageSize = 5;
@@ -30,7 +102,10 @@ const getPosts = async (req, res) => {
     const count = await Post.countDocuments();
 
     const posts = await Post.find()
-      .populate("user", "name username profilePicture")
+      .populate(
+        "user",
+        "name username profilePicture"
+      )
       .sort({ createdAt: -1 })
       .limit(pageSize)
       .skip(pageSize * (page - 1));
@@ -41,6 +116,7 @@ const getPosts = async (req, res) => {
       pages: Math.ceil(count / pageSize),
       totalPosts: count,
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -48,7 +124,10 @@ const getPosts = async (req, res) => {
   }
 };
 
+// ========================================
 // LIKE POST
+// ========================================
+
 const toggleLike = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -61,19 +140,22 @@ const toggleLike = async (req, res) => {
 
     const userId = req.user._id;
 
-    // Already liked?
-    const alreadyLiked = post.likes.includes(userId);
+    const alreadyLiked =
+      post.likes.includes(userId);
 
     if (alreadyLiked) {
       post.likes = post.likes.filter(
-        (id) => id.toString() !== userId.toString(),
+        (id) =>
+          id.toString() !== userId.toString()
       );
+
     } else {
       post.likes.push(userId);
 
       // Remove dislike if exists
       post.dislikes = post.dislikes.filter(
-        (id) => id.toString() !== userId.toString(),
+        (id) =>
+          id.toString() !== userId.toString()
       );
     }
 
@@ -86,6 +168,7 @@ const toggleLike = async (req, res) => {
       likes: post.likes,
       dislikes: post.dislikes,
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -93,7 +176,10 @@ const toggleLike = async (req, res) => {
   }
 };
 
+// ========================================
 // DISLIKE POST
+// ========================================
+
 const toggleDislike = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -106,19 +192,22 @@ const toggleDislike = async (req, res) => {
 
     const userId = req.user._id;
 
-    // Already disliked?
-    const alreadyDisliked = post.dislikes.includes(userId);
+    const alreadyDisliked =
+      post.dislikes.includes(userId);
 
     if (alreadyDisliked) {
       post.dislikes = post.dislikes.filter(
-        (id) => id.toString() !== userId.toString(),
+        (id) =>
+          id.toString() !== userId.toString()
       );
+
     } else {
       post.dislikes.push(userId);
 
       // Remove like if exists
       post.likes = post.likes.filter(
-        (id) => id.toString() !== userId.toString(),
+        (id) =>
+          id.toString() !== userId.toString()
       );
     }
 
@@ -130,6 +219,7 @@ const toggleDislike = async (req, res) => {
       likes: post.likes,
       dislikes: post.dislikes,
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -137,17 +227,25 @@ const toggleDislike = async (req, res) => {
   }
 };
 
+// ========================================
+// GET USER POSTS
+// ========================================
+
 const getUserPosts = async (req, res) => {
   try {
     const posts = await Post.find({
       user: req.params.id,
     })
-      .populate("user", "name username profilePicture")
+      .populate(
+        "user",
+        "name username profilePicture"
+      )
       .sort({
         createdAt: -1,
       });
 
     res.status(200).json(posts);
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
