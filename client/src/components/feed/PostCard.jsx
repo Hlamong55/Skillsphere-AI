@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 
 import {
@@ -16,16 +15,10 @@ import socket from "../../socket/socket";
 // Get currently logged-in user's ID
 const getCurrentUserId = () => {
   try {
-    const stored = JSON.parse(
-      localStorage.getItem("userInfo") || "null"
-    );
+    const stored = JSON.parse(localStorage.getItem("userInfo") || "null");
 
     return String(
-      stored?.user?._id ||
-      stored?._id ||
-      stored?.user?.id ||
-      stored?.id ||
-      ""
+      stored?.user?._id || stored?._id || stored?.user?.id || stored?.id || "",
     );
   } catch (error) {
     console.error("User info error:", error);
@@ -39,9 +32,7 @@ const hasReaction = (array, userId) => {
     return false;
   }
 
-  return array.some(
-    (id) => String(id?._id || id) === userId
-  );
+  return array.some((id) => String(id?._id || id) === userId);
 };
 
 const PostCard = ({ post }) => {
@@ -62,21 +53,15 @@ const PostCard = ({ post }) => {
     return null;
   };
 
-  const [reaction, setReaction] = useState(
-    getInitialReaction
-  );
+  const [reaction, setReaction] = useState(getInitialReaction);
 
-  const [likesCount, setLikesCount] = useState(
-    post?.likes?.length || 0
-  );
+  const [likesCount, setLikesCount] = useState(post?.likes?.length || 0);
 
   const [dislikesCount, setDislikesCount] = useState(
-    post?.dislikes?.length || 0
+    post?.dislikes?.length || 0,
   );
 
-  const [commentsCount, setCommentsCount] = useState(
-    post?.commentsCount ?? 0
-  );
+  const [commentsCount, setCommentsCount] = useState(post?.commentsCount ?? 0);
 
   const [reactionLoading, setReactionLoading] = useState(false);
   const [reactionError, setReactionError] = useState("");
@@ -109,15 +94,10 @@ const PostCard = ({ post }) => {
       }
 
       // Sync current user's reaction when IDs are available
-      if (
-        Array.isArray(data.likes) &&
-        Array.isArray(data.dislikes)
-      ) {
+      if (Array.isArray(data.likes) && Array.isArray(data.dislikes)) {
         if (hasReaction(data.likes, currentUserId)) {
           setReaction("like");
-        } else if (
-          hasReaction(data.dislikes, currentUserId)
-        ) {
+        } else if (hasReaction(data.dislikes, currentUserId)) {
           setReaction("dislike");
         } else {
           setReaction(null);
@@ -143,9 +123,7 @@ const PostCard = ({ post }) => {
     setReactionError("");
 
     try {
-      const { data } = await api.put(
-        `/posts/${post._id}/${type}`
-      );
+      const { data } = await api.put(`/posts/${post._id}/${type}`);
 
       // Update counts
       setLikesCount(data.likesCount);
@@ -156,9 +134,7 @@ const PostCard = ({ post }) => {
 
       if (hasReaction(data.likes, currentUserId)) {
         newReaction = "like";
-      } else if (
-        hasReaction(data.dislikes, currentUserId)
-      ) {
+      } else if (hasReaction(data.dislikes, currentUserId)) {
         newReaction = "dislike";
       }
 
@@ -175,9 +151,7 @@ const PostCard = ({ post }) => {
     } catch (error) {
       console.error("Reaction error:", error);
 
-      setReactionError(
-        "Unable to update reaction. Please try again."
-      );
+      setReactionError("Unable to update reaction. Please try again.");
     } finally {
       setReactionLoading(false);
     }
@@ -187,13 +161,10 @@ const PostCard = ({ post }) => {
     <>
       {/* POST CARD */}
       <div className="bg-white/3 border border-white/10 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.45)] hover:border-indigo-500/20 transition-all duration-500">
-
         {/* HEADER */}
         <div className="p-6">
           <div className="flex items-start justify-between">
-
             <div className="flex items-center gap-4">
-
               {/* AVATAR */}
               <div className="w-14 h-14 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 shadow-lg shrink-0" />
 
@@ -233,11 +204,26 @@ const PostCard = ({ post }) => {
           />
         )}
 
+        {/* POST VIDEO */}
+        {post?.video && (
+          <div className="w-full bg-black border-t border-white/10">
+            <video
+              key={post.video}
+              src={post.video}
+              controls
+              playsInline
+              preload="metadata"
+              className="w-full max-h-125 object-contain bg-black"
+              aria-label="Post video attachment"
+            >
+              Your browser does not support video playback.
+            </video>
+          </div>
+        )}
+
         {/* BOTTOM ACTIONS */}
         <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between">
-
           <div className="flex items-center gap-5 sm:gap-7">
-
             {/* LIKE BUTTON */}
             <button
               type="button"
@@ -260,9 +246,7 @@ const PostCard = ({ post }) => {
                 }`}
               />
 
-              <span className="text-sm font-medium">
-                {likesCount}
-              </span>
+              <span className="text-sm font-medium">{likesCount}</span>
             </button>
 
             {/* DISLIKE BUTTON */}
@@ -287,9 +271,7 @@ const PostCard = ({ post }) => {
                 }`}
               />
 
-              <span className="text-sm font-medium">
-                {dislikesCount}
-              </span>
+              <span className="text-sm font-medium">{dislikesCount}</span>
             </button>
 
             {/* COMMENT BUTTON */}
@@ -300,9 +282,7 @@ const PostCard = ({ post }) => {
             >
               <FiMessageCircle size={21} />
 
-              <span className="text-sm font-medium">
-                {commentsCount}
-              </span>
+              <span className="text-sm font-medium">{commentsCount}</span>
             </button>
 
             {/* SHARE BUTTON */}
@@ -325,10 +305,7 @@ const PostCard = ({ post }) => {
 
         {/* REACTION ERROR */}
         {reactionError && (
-          <p
-            role="alert"
-            className="px-6 pb-4 text-red-400 text-sm"
-          >
+          <p role="alert" className="px-6 pb-4 text-red-400 text-sm">
             {reactionError}
           </p>
         )}

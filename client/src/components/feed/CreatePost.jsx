@@ -1,3 +1,4 @@
+
 import {
   useEffect,
   useRef,
@@ -16,36 +17,74 @@ import toast from "react-hot-toast";
 import api from "../../services/api";
 
 // ========================================
-// IMAGE CONFIGURATION
+// MEDIA UPLOAD CONFIGURATION
+// ========================================
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MB = 1024 * 1024;
 
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
+const MEDIA_CONFIG = {
+  image: {
+    maxSize: 5 * MB,
+    label: "Image",
+    formats: {
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
+      "image/webp": [".webp"],
+    },
+    pathPattern:
+      /^\/uploads\/image\/[a-f0-9]{32}\.(jpg|png|webp)$/i,
+  },
+
+  video: {
+    maxSize: 25 * MB,
+    label: "Video",
+    formats: {
+      "video/mp4": [".mp4"],
+      "video/webm": [".webm"],
+    },
+    pathPattern:
+      /^\/uploads\/video\/[a-f0-9]{32}\.(mp4|webm)$/i,
+  },
+};
 
 // ========================================
 // CREATE POST
+// ========================================
 
 const CreatePost = ({
   fetchPosts,
   addNewPost,
 }) => {
-
   const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStage, setUploadStage] = useState("");
 
-  const fileInputRef = useRef(null);
+  // Only one attachment per post:
+  // image OR video
+  const [mediaFile, setMediaFile] =
+    useState(null);
+
+  const [mediaType, setMediaType] =
+    useState("");
+
+  const [mediaPreview, setMediaPreview] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [uploadProgress, setUploadProgress] =
+    useState(0);
+
+  const [uploadStage, setUploadStage] =
+    useState("");
+
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+
   const previewUrlRef = useRef("");
 
   // ========================================
-  // CLEAN UP BROWSER PREVIEW URL
+  // CLEAN UP PREVIEW ON UNMOUNT
+  // ========================================
 
   useEffect(() => {
     return () => {
@@ -53,14 +92,17 @@ const CreatePost = ({
         URL.revokeObjectURL(
           previewUrlRef.current
         );
+
+        previewUrlRef.current = "";
       }
     };
   }, []);
 
   // ========================================
-  // REMOVE SELECTED IMAGE
+  // REMOVE SELECTED MEDIA
+  // ========================================
 
-  const removeImage = () => {
+  const removeMedia = () => {
     if (previewUrlRef.current) {
       URL.revokeObjectURL(
         previewUrlRef.current
@@ -69,81 +111,115 @@ const CreatePost = ({
       previewUrlRef.current = "";
     }
 
-    setImageFile(null);
-    setImagePreview("");
+    setMediaFile(null);
+    setMediaType("");
+    setMediaPreview("");
     setUploadProgress(0);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+
+    if (videoInputRef.current) {
+      videoInputRef.current.value = "";
     }
   };
 
   // ========================================
-  // SELECT & VALIDATE IMAGE
+  // SELECT IMAGE OR VIDEO
+  // ========================================
 
-  const handleImage = (event) => {
-    if (loading) return;
-
+  const handleMediaSelect = (
+    event,
+    kind
+  ) => {
     const file = event.target.files?.[0];
 
-    if (!file) return;
+    // Allow the same file to be selected again
+    event.target.value = "";
+
+    if (!file || loading) return;
+
+    const config = MEDIA_CONFIG[kind];
+
+    if (!config) return;
+
+    // Validate MIME type and file extension
+    const allowedExtensions =
+      config.formats[file.type];
+
+    const extension =
+      "." +
+      (file.name.split(".").pop() || "")
+        .toLowerCase();
 
     if (
-      !ALLOWED_IMAGE_TYPES.includes(
-        file.type
-      )
+      !allowedExtensions ||
+      !allowedExtensions.includes(extension)
     ) {
       toast.error(
-        "Only JPG, PNG and WebP images are allowed."
+        kind === "image"
+          ? "Only JPG, PNG and WebP images are allowed."
+          : "Only MP4 and WebM videos are allowed."
       );
 
-      event.target.value = "";
       return;
     }
 
-    if (file.size > MAX_IMAGE_SIZE) {
-      toast.error(
-        "Image must be 5 MB or smaller."
-      );
-
-      event.target.value = "";
-      return;
-    }
-
+    // Empty file validation
     if (file.size === 0) {
       toast.error(
-        "Cannot upload an empty image."
+        "Cannot upload an empty file."
       );
-
-      event.target.value = "";
       return;
     }
 
-    // Revoke previous preview
+    // Maximum file size
+    if (file.size > config.maxSize) {
+      toast.error(
+        kind === "image"
+          ? "Image must be 5 MB or smaller."
+          : "Video must be 25 MB or smaller."
+      );
+
+      return;
+    }
+
+    // Remove old preview URL
     if (previewUrlRef.current) {
       URL.revokeObjectURL(
         previewUrlRef.current
       );
     }
 
-    // Temporary preview only.
-    // This URL will NOT be saved in MongoDB.
+    // Browser-only preview
     const previewUrl =
       URL.createObjectURL(file);
 
     previewUrlRef.current = previewUrl;
 
-    setImageFile(file);
-    setImagePreview(previewUrl);
-
-    // Allow selecting the same file again
-    event.target.value = "";
+    setMediaFile(file);
+    setMediaType(kind);
+    setMediaPreview(previewUrl);
+    setUploadProgress(0);
   };
 
   // ========================================
-  // UPLOAD IMAGE TO SERVER
+  // UPLOAD MEDIA TO BACKEND
+  // ========================================
 
-  const uploadImage = async (file) => {
+  const uploadMedia = async (
+    file,
+    kind
+  ) => {
+    const config = MEDIA_CONFIG[kind];
+
+    if (!config) {
+      throw new Error(
+        "Invalid media category."
+      );
+    }
+
     const formData = new FormData();
 
     formData.append("file", file);
@@ -151,16 +227,17 @@ const CreatePost = ({
     setUploadStage("uploading");
     setUploadProgress(0);
 
+    // Existing secure Upload API
     const { data } = await api.post(
-      "/uploads/image",
+      `/uploads/${kind}`,
       formData,
       {
-        onUploadProgress: (progressEvent) => {
-          if (!progressEvent.total) return;
+        onUploadProgress: (event) => {
+          if (!event.total) return;
 
           const percent = Math.round(
-            (progressEvent.loaded * 100) /
-              progressEvent.total
+            (event.loaded * 100) /
+              event.total
           );
 
           setUploadProgress(
@@ -170,68 +247,80 @@ const CreatePost = ({
       }
     );
 
-    // Backend returns:
-    // /uploads/image/randomfilename.jpg
     const filePath = data?.filePath;
 
+    // Validate response from Upload API
     if (
       typeof filePath !== "string" ||
-      !/^\/uploads\/image\/[a-f0-9]{32}\.(jpg|png|webp)$/i.test(
-        filePath
-      )
+      !config.pathPattern.test(filePath)
     ) {
       throw new Error(
-        "Upload API returned an invalid image path."
+        "Upload API returned an invalid file path."
       );
     }
 
-    // Convert backend-relative path into full URL.
-    // Example:
-    // http://localhost:5001/uploads/image/...
+    // Convert relative path into full URL
     //
-    // This keeps existing PostCard and
-    // UserPosts rendering compatible.
-    const fullImageUrl = new URL(
+    // Example:
+    // http://localhost:5001/uploads/video/abc.mp4
+    //
+    // This is a persistent server URL,
+    // not a temporary blob: URL.
+    return new URL(
       filePath,
       api.defaults.baseURL
     ).href;
-
-    return fullImageUrl;
   };
 
   // ========================================
   // CREATE POST
+  // ========================================
 
   const handleCreatePost = async () => {
     if (loading) return;
 
-    const trimmedContent = content.trim();
+    const trimmedContent =
+      content.trim();
 
     if (!trimmedContent) {
-      toast.error("Write something first");
+      toast.error(
+        "Write something first"
+      );
       return;
     }
 
     try {
       setLoading(true);
 
-      let uploadedImageUrl = "";
+      let imageUrl = "";
+      let videoUrl = "";
 
-      // Step 1: Upload actual image
-      if (imageFile) {
-        uploadedImageUrl = await uploadImage(
-          imageFile
-        );
+      // Step 1: Upload selected attachment
+      if (mediaFile && mediaType) {
+        const uploadedUrl =
+          await uploadMedia(
+            mediaFile,
+            mediaType
+          );
+
+        if (mediaType === "image") {
+          imageUrl = uploadedUrl;
+        }
+
+        if (mediaType === "video") {
+          videoUrl = uploadedUrl;
+        }
       }
 
-      // Step 2: Save post in MongoDB
+      // Step 2: Save Post to MongoDB
       setUploadStage("posting");
 
       const { data } = await api.post(
         "/posts",
         {
           content: trimmedContent,
-          image: uploadedImageUrl,
+          image: imageUrl,
+          video: videoUrl,
         }
       );
 
@@ -239,16 +328,16 @@ const CreatePost = ({
         "Post created successfully!"
       );
 
-      // Keep existing instant UI update
+      // Existing instant UI update
       if (addNewPost) {
         addNewPost(data);
       }
 
-      // Reset form
+      // Reset form after successful post
       setContent("");
-      removeImage();
+      removeMedia();
 
-      // Keep existing optional refresh
+      // Existing optional refresh
       if (fetchPosts) {
         fetchPosts();
       }
@@ -265,7 +354,7 @@ const CreatePost = ({
         "Failed to create post."
       );
 
-      // Keep content and selected image
+      // Keep content and selected file
       // so the user can retry.
 
     } finally {
@@ -277,6 +366,7 @@ const CreatePost = ({
 
   // ========================================
   // ENTER TO SUBMIT
+  // ========================================
 
   const handleKeyDown = (event) => {
     if (
@@ -291,6 +381,7 @@ const CreatePost = ({
 
   // ========================================
   // RENDER
+  // ========================================
 
   return (
     <div className="bg-white/3 border border-white/10 backdrop-blur-2xl rounded-2xl p-4 shadow-[0_10px_60px_rgba(0,0,0,0.45)]">
@@ -317,32 +408,67 @@ const CreatePost = ({
           />
 
           {/* IMAGE PREVIEW */}
-          {imagePreview && (
-            <div className="relative">
+          {mediaType === "image" &&
+            mediaPreview && (
+              <div className="relative">
 
-              <img
-                src={imagePreview}
-                alt="Selected post image preview"
-                className="w-full max-h-105 object-cover rounded-2xl border border-white/10"
-              />
+                <img
+                  src={mediaPreview}
+                  alt="Selected post image preview"
+                  className="w-full max-h-105 object-cover rounded-2xl border border-white/10"
+                />
 
-              {/* REMOVE IMAGE */}
-              <button
-                type="button"
-                onClick={removeImage}
-                disabled={loading}
-                aria-label="Remove selected image"
-                className="absolute top-3 right-3 bg-black/60 hover:bg-red-500 transition-all duration-300 p-2.5 rounded-full text-white disabled:opacity-50"
-              >
-                <FiX size={18} />
-              </button>
+                {/* REMOVE IMAGE */}
+                <button
+                  type="button"
+                  onClick={removeMedia}
+                  disabled={loading}
+                  aria-label="Remove selected image"
+                  className="absolute top-3 right-3 bg-black/60 hover:bg-red-500 transition-all duration-300 p-2.5 rounded-full text-white disabled:opacity-50"
+                >
+                  <FiX size={18} />
+                </button>
 
-              <p className="text-xs text-gray-400 mt-2">
-                {imageFile?.name}
-              </p>
+                <p className="mt-2 text-xs text-gray-400 break-all">
+                  {mediaFile?.name}
+                </p>
 
-            </div>
-          )}
+              </div>
+            )}
+
+          {/* VIDEO PREVIEW */}
+          {mediaType === "video" &&
+            mediaPreview && (
+              <div className="relative">
+
+                <video
+                  src={mediaPreview}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full max-h-105 rounded-2xl border border-white/10 bg-black"
+                >
+                  Your browser does not
+                  support video playback.
+                </video>
+
+                {/* REMOVE VIDEO */}
+                <button
+                  type="button"
+                  onClick={removeMedia}
+                  disabled={loading}
+                  aria-label="Remove selected video"
+                  className="absolute top-3 right-3 bg-black/70 hover:bg-red-500 transition-all duration-300 p-2.5 rounded-full text-white disabled:opacity-50"
+                >
+                  <FiX size={18} />
+                </button>
+
+                <p className="mt-2 text-xs text-gray-400 break-all">
+                  {mediaFile?.name}
+                </p>
+
+              </div>
+            )}
 
           {/* UPLOAD PROGRESS */}
           {loading &&
@@ -351,7 +477,10 @@ const CreatePost = ({
 
                 <div className="flex items-center justify-between gap-3 text-xs text-indigo-300">
                   <span>
-                    Uploading Image...
+                    Uploading{" "}
+                    {mediaType === "video"
+                      ? "Video"
+                      : "Image"}...
                   </span>
 
                   <span>
@@ -369,6 +498,7 @@ const CreatePost = ({
                   />
 
                 </div>
+
               </div>
             )}
 
@@ -378,7 +508,7 @@ const CreatePost = ({
             {/* MEDIA BUTTONS */}
             <div className="flex items-center gap-3">
 
-              {/* IMAGE SELECT */}
+              {/* IMAGE BUTTON */}
               <label
                 className={`flex items-center gap-2 bg-white/3 border border-white/10 px-3 py-1.5 rounded-xl transition-all duration-300 text-gray-300 ${
                   loading
@@ -393,28 +523,48 @@ const CreatePost = ({
                 </span>
 
                 <input
-                  ref={fileInputRef}
+                  ref={imageInputRef}
                   type="file"
                   hidden
                   disabled={loading}
                   accept=".jpg,.jpeg,.png,.webp"
-                  onChange={handleImage}
+                  onChange={(event) =>
+                    handleMediaSelect(
+                      event,
+                      "image"
+                    )
+                  }
                 />
               </label>
 
-              {/* VIDEO COMING IN STEP 13.3 */}
-              <button
-                type="button"
-                disabled
-                title="Video upload will be added in Step 13.3"
-                className="flex items-center gap-2 bg-white/3 border border-white/10 px-3 py-1.5 rounded-xl text-gray-400 opacity-50 cursor-not-allowed"
+              {/* VIDEO BUTTON */}
+              <label
+                className={`flex items-center gap-2 bg-white/3 border border-white/10 px-3 py-1.5 rounded-xl transition-all duration-300 text-gray-300 ${
+                  loading
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-white/6 hover:text-white cursor-pointer"
+                }`}
               >
                 <FiVideo size={18} />
 
                 <span className="text-sm">
                   Video
                 </span>
-              </button>
+
+                <input
+                  ref={videoInputRef}
+                  type="file"
+                  hidden
+                  disabled={loading}
+                  accept=".mp4,.webm"
+                  onChange={(event) =>
+                    handleMediaSelect(
+                      event,
+                      "video"
+                    )
+                  }
+                />
+              </label>
 
             </div>
 

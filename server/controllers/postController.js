@@ -3,7 +3,6 @@ const Post = require("../models/Post");
 
 // ========================================
 // IMAGE URL VALIDATION
-// ========================================
 
 const isValidImageUrl = (value) => {
   if (value === "" || value == null) {
@@ -30,9 +29,9 @@ const isValidImageUrl = (value) => {
   }
 };
 
+
 // ========================================
 // CREATE POST
-// ========================================
 
 const createPost = async (req, res) => {
   try {
@@ -59,17 +58,22 @@ const createPost = async (req, res) => {
       });
     }
 
-    // Existing video field preserved.
-    const videoUrl =
-      typeof video === "string"
-        ? video.trim()
-        : "";
+    // Validate persistent video URL.
+    // Reuse the existing HTTP/HTTPS URL validator.
+    const videoUrl = video ?? "";
+
+    if (!isValidImageUrl(videoUrl)) {
+      return res.status(400).json({
+        message: "Invalid video URL.",
+      });
+    }
+
 
     const post = await Post.create({
       user: req.user._id,
       content: content.trim(),
       image: imageUrl.trim(),
-      video: videoUrl,
+      video: videoUrl.trim(),
     });
 
     // Return author details for instant UI update.
@@ -89,9 +93,9 @@ const createPost = async (req, res) => {
   }
 };
 
+
 // ========================================
 // GET ALL POSTS
-// ========================================
 
 const getPosts = async (req, res) => {
   try {
@@ -124,9 +128,9 @@ const getPosts = async (req, res) => {
   }
 };
 
+
 // ========================================
 // LIKE POST
-// ========================================
 
 const toggleLike = async (req, res) => {
   try {
@@ -178,7 +182,6 @@ const toggleLike = async (req, res) => {
 
 // ========================================
 // DISLIKE POST
-// ========================================
 
 const toggleDislike = async (req, res) => {
   try {
@@ -227,9 +230,9 @@ const toggleDislike = async (req, res) => {
   }
 };
 
+
 // ========================================
 // GET USER POSTS
-// ========================================
 
 const getUserPosts = async (req, res) => {
   try {
