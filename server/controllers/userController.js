@@ -177,23 +177,79 @@ const searchUsers = async (req, res) => {
   }
 };
 
+// Suggest User
 const getSuggestedUsers = async (req, res) => {
   try {
+    const currentUserId =
+      req.user?._id || req.user?.id;
+
+    if (!currentUserId) {
+      return res.status(401).json({
+        message: "Authentication required.",
+      });
+    }
+
+    // Get logged-in user's following list
+    const currentUser = await User.findById(
+      currentUserId
+    )
+      .select("following")
+      .lean();
+
+    if (!currentUser) {
+      return res.status(401).json({
+        message: "Current user not found.",
+      });
+    }
+
+    // Exclude own account
     const users = await User.find({
       _id: {
-        $ne: req.user._id,
+        $ne: currentUserId,
       },
     })
-      .select("name username profilePicture")
-      .limit(5);
+      .select("_id name username profilePicture")
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
 
-    res.status(200).json(users);
+    // Following IDs for quick comparison
+    const followingIds = new Set(
+      (currentUser.following || []).map(
+        (id) => String(id)
+      )
+    );
+
+    // Add real following status
+    const suggestedUsers = users.map(
+      (user) => ({
+        _id: user._id,
+        name: user.name,
+        username: user.username,
+        profilePicture:
+          user.profilePicture || "",
+        isFollowing: followingIds.has(
+          String(user._id)
+        ),
+      })
+    );
+
+    return res.status(200).json(
+      suggestedUsers
+    );
+
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
+    console.error(
+      "Get Suggested Users Error:",
+      error
+    );
+
+    return res.status(500).json({
+      message: "Failed to load suggested users.",
     });
   }
 };
+
 
 module.exports = {
   getUserProfile,

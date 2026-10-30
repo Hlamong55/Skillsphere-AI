@@ -2,14 +2,12 @@
 const express = require("express");
 const multer = require("multer");
 
-const router = express.Router();
-
 const {
   protect,
 } = require("../middleware/authMiddleware");
 
 const {
-  uploader,
+  createUploader,
   RULES,
 } = require("../middleware/uploadMiddleware");
 
@@ -17,8 +15,10 @@ const {
   uploadFile,
 } = require("../controllers/uploadController");
 
+const router = express.Router();
+
 // ========================================
-// UPLOAD ERROR HANDLER
+// SECURE UPLOAD MIDDLEWARE
 // ========================================
 
 const handleMulterUpload = (
@@ -26,11 +26,13 @@ const handleMulterUpload = (
   res,
   next
 ) => {
-  // Only known upload categories
+  const kind = req.params.kind;
+
+  // Reject unknown upload categories
   if (
     !Object.prototype.hasOwnProperty.call(
       RULES,
-      req.params.kind
+      kind
     )
   ) {
     return res.status(400).json({
@@ -38,7 +40,15 @@ const handleMulterUpload = (
     });
   }
 
-  uploader.single("file")(
+  const upload = createUploader(kind);
+
+  const maxMB =
+    RULES[kind].maxBytes /
+    (1024 * 1024);
+
+  // Process one file using the
+  // category-specific stream limit.
+  upload.single("file")(
     req,
     res,
     (error) => {
@@ -46,16 +56,15 @@ const handleMulterUpload = (
         if (
           error instanceof multer.MulterError
         ) {
-          const status =
-            error.code === "LIMIT_FILE_SIZE"
-              ? 413
-              : 400;
+          const tooLarge =
+            error.code === "LIMIT_FILE_SIZE";
 
-          return res.status(status).json({
-            message:
-              error.code === "LIMIT_FILE_SIZE"
-                ? "File is too large. Maximum 25 MB."
-                : error.message,
+          return res.status(
+            tooLarge ? 413 : 400
+          ).json({
+            message: tooLarge
+              ? `Maximum ${maxMB} MB allowed for ${kind} uploads.`
+              : error.message,
           });
         }
 
@@ -63,7 +72,14 @@ const handleMulterUpload = (
           error.statusCode || 400
         ).json({
           message:
-            error.message || "Invalid upload.",
+            error.message ||
+            "Invalid file upload.",
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          message: "Please select a file.",
         });
       }
 
@@ -73,8 +89,7 @@ const handleMulterUpload = (
 };
 
 // ========================================
-// PROTECTED UPLOAD ENDPOINT
-// ========================================
+// PROTECTED UPLOAD ENDPOINTS
 
 // POST /api/uploads/image
 // POST /api/uploads/video
