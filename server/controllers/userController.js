@@ -47,12 +47,19 @@ const updateProfile = async (req, res) => {
 
     user.skills = req.body.skills || user.skills;
 
+    
     const updatedUser = await user.save();
+
+    const safeUser = await User.findById(updatedUser._id)
+      .select("-password")
+      .populate("followers", "_id")
+      .populate("following", "_id");
 
     res.status(200).json({
       message: "Profile updated successfully",
-      user: updatedUser,
+      user: safeUser,
     });
+
   } catch (error) {
     res.status(500).json({
       message: error.message,
