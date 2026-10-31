@@ -4,11 +4,12 @@ import {
   FiHeart,
   FiThumbsDown,
   FiMessageCircle,
-  FiShare2,
+  // FiShare2,
   FiMoreHorizontal,
 } from "react-icons/fi";
 
 import CommentModal from "./CommentModal";
+import BookmarkButton from "./BookmarkButton";
 import api from "../../services/api";
 import socket from "../../socket/socket";
 
@@ -35,7 +36,7 @@ const hasReaction = (array, userId) => {
   return array.some((id) => String(id?._id || id) === userId);
 };
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, onBookmarkChange }) => {
   const currentUserId = getCurrentUserId();
 
   const [openComments, setOpenComments] = useState(false);
@@ -286,16 +287,10 @@ const PostCard = ({ post }) => {
             </button>
 
             {/* SHARE BUTTON */}
-            <button
-              type="button"
-              className="flex items-center gap-2 text-gray-400 hover:text-green-400 transition-all duration-300"
-            >
-              <FiShare2 size={21} />
-
-              <span className="hidden sm:inline text-sm font-medium">
-                Share
-              </span>
-            </button>
+            <BookmarkButton
+              postId={post._id}
+              onSavedChange={onBookmarkChange}
+            />
           </div>
 
           <p className="hidden md:block text-gray-500 text-xs">

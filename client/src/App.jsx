@@ -2,7 +2,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/common/Navbar";
-
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,6 +10,7 @@ import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import Resources from "./pages/Resources";
 import Events from "./pages/Events";
+import SavedPosts from "./pages/SavedPosts";
 
 function App() {
   return (
@@ -27,6 +27,7 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/saved-posts" element={<SavedPosts />} />
         </Routes>
       </div>
     </BrowserRouter>
