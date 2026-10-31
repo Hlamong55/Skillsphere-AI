@@ -4,11 +4,13 @@ import { Toaster } from "react-hot-toast";
 import App from "./App";
 import "./index.css";
 import AuthProvider from "./context/AuthContext";
+import OnlinePresenceProvider from "./context/OnlinePresenceProvider";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
-      <App />
+      <OnlinePresenceProvider>
+        <App />
 
       <Toaster
         position="top-center"
@@ -36,6 +38,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           },
         }}
       />
+      </OnlinePresenceProvider>
     </AuthProvider>
   </React.StrictMode>,
 );

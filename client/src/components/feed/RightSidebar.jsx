@@ -1,4 +1,5 @@
 import SuggestedUsers from "./SuggestedUsers";
+import ActiveCommunity from "./ActiveCommunity";
 
 const RightSidebar = () => {
   return (
@@ -35,48 +36,7 @@ const RightSidebar = () => {
       </div>
 
       {/* Active Community */}
-      <div
-        className=" bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-5 "
-      >
-        <h2
-          className=" text-white text-lg font-bold mb-5
-          "
-        >
-          Active Community
-        </h2>
-
-        {[1, 2, 3].map((item) => (
-          <div
-            key={item}
-            className=" flex items-center gap-4 py-3 "
-          >
-            <div className="relative">
-              <div
-                className="w-12 h-12 rounded-full bg-linear-to-r from-indigo-500 to-purple-500"
-              />
-
-              <span
-                className=" absolute bottom-0 right-0
-                  w-3 h-3 rounded-full bg-green-500 border-2 border-[#0B1120] "
-              />
-            </div>
-
-            <div>
-              <h3
-                className=" text-white font-semibold "
-              >
-                Community Member
-              </h3>
-
-              <p
-                className=" text-gray-400 text-sm "
-              >
-                Online now
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ActiveCommunity></ActiveCommunity>
 
       {/* Platform Stats */}
       <div

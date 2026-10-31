@@ -15,6 +15,7 @@ const resourceRoutes = require("./routes/resourceRoutes");
 const eventRoutes = require("./routes/eventRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const savedPostRoutes = require("./routes/savedPostRoutes");
+const registerOnlinePresence = require("./socket/onlinePresence");
 
 const app = express();
 
@@ -64,6 +65,9 @@ const io = new Server(server, {
     origin: "*",
   },
 });
+
+// NEW: Active Community Presence
+registerOnlinePresence(io);
 
 // Socket Connection
 io.on("connection", (socket) => {
