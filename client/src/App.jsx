@@ -29,10 +29,7 @@ function App() {
           <Route path="/resources" element={<Resources />} />
           <Route path="/events" element={<Events />} />
           <Route path="/saved-posts" element={<SavedPosts />} />
-          <Route
-  path="/ai-lab"
-  element={<GesturePrediction />}
-/>
+          <Route path="/ai-lab" element={<GesturePrediction />}/>
         </Routes>
       </div>
     </BrowserRouter>
