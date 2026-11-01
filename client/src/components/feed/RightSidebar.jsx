@@ -38,48 +38,6 @@ const RightSidebar = () => {
       {/* Active Community */}
       <ActiveCommunity></ActiveCommunity>
 
-      {/* Platform Stats */}
-      <div
-        className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-5 "
-      >
-        <h2
-          className="text-white text-lg font-bold mb-5"
-        >
-          Platform Stats
-        </h2>
-
-        <div className="space-y-4">
-          <div className="flex justify-between">
-            <span className="text-gray-400">
-              Members
-            </span>
-
-            <span className="text-white font-semibold">
-              10K+
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-400">
-              Posts
-            </span>
-
-            <span className="text-white font-semibold">
-              25K+
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-400">
-              Skills Shared
-            </span>
-
-            <span className="text-white font-semibold">
-              50K+
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
