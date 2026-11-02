@@ -16,6 +16,7 @@ const eventRoutes = require("./routes/eventRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const savedPostRoutes = require("./routes/savedPostRoutes");
 const registerOnlinePresence = require("./socket/onlinePresence");
+const graphqlRoutes = require("./routes/graphqlRoutes");
 
 const app = express();
 
@@ -50,6 +51,8 @@ app.use("/api/resources", resourceRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/saved-posts", savedPostRoutes);
+app.use("/graphql", graphqlRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("SkillSphere AI Server Running");
