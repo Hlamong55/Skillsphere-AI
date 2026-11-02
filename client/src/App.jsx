@@ -12,6 +12,7 @@ import Resources from "./pages/Resources";
 import Events from "./pages/Events";
 import SavedPosts from "./pages/SavedPosts";
 import GesturePrediction from "./pages/GesturePrediction";
+import CommunityInsights from "./pages/CommunityInsights";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/saved-posts" element={<SavedPosts />} />
           <Route path="/ai-lab" element={<GesturePrediction />}/>
+          <Route path="/community-insights" element={<CommunityInsights />} />
         </Routes>
       </div>
     </BrowserRouter>

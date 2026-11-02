@@ -3,12 +3,12 @@ import { useContext } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
   FiHome,
-  FiTrendingUp,
   FiBookmark,
   FiCpu,
   FiSearch,
   FiZap,
   FiArrowRight,
+  FiBarChart2,
 } from "react-icons/fi";
 
 import { AuthContext } from "../../context/AuthContext";
@@ -42,10 +42,10 @@ const menuItems = [
     available: true,
   },
   {
-    label: "Trending",
-    path: null,
-    icon: FiTrendingUp,
-    available: false,
+     label: "Community Insights",
+    path: "/community-insights",
+    icon: FiBarChart2,
+    available: true,
   },
 ];
 
