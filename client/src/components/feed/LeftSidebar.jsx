@@ -6,7 +6,7 @@ import {
   FiTrendingUp,
   FiBookmark,
   FiCpu,
-  FiMessageCircle,
+  FiSearch,
   FiZap,
   FiArrowRight,
 } from "react-icons/fi";
@@ -24,10 +24,10 @@ const menuItems = [
     available: true,
   },
   {
-    label: "Trending",
-    path: null,
-    icon: FiTrendingUp,
-    available: false,
+    label: "Explore",
+    path: "/search",
+    icon: FiSearch,
+    available: true,
   },
   {
     label: "Saved Posts",
@@ -37,14 +37,14 @@ const menuItems = [
   },
   {
     label: "AI Tools",
-    path: null,
+    path: "/ai-lab",
     icon: FiCpu,
-    available: false,
+    available: true,
   },
   {
-    label: "Messages",
+    label: "Trending",
     path: null,
-    icon: FiMessageCircle,
+    icon: FiTrendingUp,
     available: false,
   },
 ];

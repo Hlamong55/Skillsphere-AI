@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { loadLiteRt, loadAndCompile, Tensor } from "@litertjs/core";
 
 import {
   FiActivity,
-  FiArrowLeft,
   FiArrowRight,
   FiAward,
   FiCamera,
@@ -639,23 +637,14 @@ export default function GesturePrediction() {
   // ======================================
 
   return (
-    <main className="min-h-screen bg-[#0B1120] px-4 py-8 text-white sm:px-6 lg:py-10">
+    <main className="min-h-screen bg-[#0B1120] px-4 py-10 text-white sm:px-6 lg:py-10">
       <div className="mx-auto max-w-7xl">
-        {/* BACK TO FEED */}
-
-        <Link
-          to="/feed"
-          className="inline-flex items-center gap-2 text-sm text-indigo-300 hover:text-indigo-200"
-        >
-          <FiArrowLeft />
-          Back to Community Feed
-        </Link>
-
+      
         {/* ==================================
             PAGE HEADER
         ================================== */}
 
-        <header className="mb-7 mt-6 flex flex-wrap items-start justify-between gap-5">
+        <header className="mb-7 flex flex-wrap items-start justify-between gap-5">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-indigo-400">
               SkillSphere AI · AI Learning Lab
@@ -996,7 +985,9 @@ export default function GesturePrediction() {
                   <FiAward size={29} />
                 </div>
 
-                <p
+               <div className="flex items-center justify-between pb-2">
+                 <div>
+                  <p
                   role="status"
                   className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-indigo-300"
                 >
@@ -1004,8 +995,10 @@ export default function GesturePrediction() {
                 </p>
 
                 <h2 className="mt-2 text-3xl font-bold">Your Final Score</h2>
+                </div>
 
-                <p className="mt-5 text-5xl font-extrabold text-emerald-300">
+                <div>
+                  <p className=" text-5xl font-extrabold text-emerald-300">
                   {correctAnswers}
 
                   <span className="text-2xl text-gray-500">
@@ -1014,9 +1007,11 @@ export default function GesturePrediction() {
                   </span>
                 </p>
 
-                <p className="mt-3 text-sm text-gray-400">
+                <p className="mt-3  text-gray-400">
                   {Math.round((correctAnswers / totalQuestions) * 100)}% correct
                 </p>
+                </div>
+               </div>
 
                 {/* ==================================
                     SAFE ANSWER SUMMARY

@@ -10,7 +10,6 @@ import {
 
 import {
   FiGrid,
-  FiSearch,
   FiUser,
   FiLogOut,
   FiMenu,
@@ -18,6 +17,7 @@ import {
   FiChevronDown,
   FiZap,
   FiBookOpen,
+  FiCpu
 } from "react-icons/fi";
 
 import { AuthContext } from "../../context/AuthContext";
@@ -27,7 +27,7 @@ import EventsNavDropdown from "./EventsNavDropdown";
 // Events is handled separately through dropdown
 const navItems = [
   { label: "Feed", path: "/feed", icon: FiGrid },
-  { label: "Explore", path: "/search", icon: FiSearch },
+  { label: "AI Tools", path: "/ai-lab", icon: FiCpu },
   { label: "Learn", path: "/resources", icon: FiBookOpen },
 ];
 
@@ -169,19 +169,19 @@ const Navbar = () => {
                     }
                     aria-expanded={profileOpen}
                     aria-label="Open profile menu"
-                    className={`flex items-center gap-3 rounded-2xl px-3 py-2 border transition-all duration-300 ${
+                    className={`flex items-center gap-3 rounded-2xl p-2 border transition-all duration-300 ${
                       isProfilePage || profileOpen
                         ? "border-indigo-500/40 bg-indigo-500/10"
-                        : "border-white/10 bg-white/5 hover:bg-white/10"
+                        : "border-white/20 hover:bg-white/10"
                     }`}
                   >
                     <Avatar />
 
-                    <div className="text-left max-w-32">
+                    {/* <div className="text-left max-w-32">
                       <p className="text-sm font-semibold text-white truncate">
                         {currentUser?.name || "User"}
                       </p>
-                    </div>
+                    </div> */}
 
                     <FiChevronDown
                       size={16}
