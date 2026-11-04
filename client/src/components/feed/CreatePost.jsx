@@ -1,5 +1,6 @@
 
 import {
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -14,7 +15,9 @@ import {
 } from "react-icons/fi";
 
 import toast from "react-hot-toast";
+
 import api from "../../services/api";
+import { AuthContext } from "../../context/AuthContext";
 
 // ========================================
 // MEDIA UPLOAD CONFIGURATION
@@ -48,17 +51,98 @@ const MEDIA_CONFIG = {
 };
 
 // ========================================
-// CREATE POST
+// PROFILE IMAGE URL HELPER
+// ========================================
+
+// Supports:
+// 1. External image URL
+// 2. Backend relative upload path
+// 3. Empty profile picture
+
+function getProfileImageUrl(profilePicture) {
+  if (
+    typeof profilePicture !== "string" ||
+    !profilePicture.trim()
+  ) {
+    return "";
+  }
+
+  const imagePath = profilePicture.trim();
+
+  if (/^https?:\/\//i.test(imagePath)) {
+    return imagePath;
+  }
+
+  // Convert backend relative image path
+  // into a full image URL.
+
+  try {
+    const normalizedPath =
+      imagePath.startsWith("/")
+        ? imagePath
+        : `/${imagePath}`;
+
+    return new URL(
+      normalizedPath,
+      api.defaults.baseURL || window.location.origin
+    ).href;
+  } catch {
+    return "";
+  }
+}
+
+// ========================================
+// CREATE POST COMPONENT
 // ========================================
 
 const CreatePost = ({
   fetchPosts,
   addNewPost,
 }) => {
+
+  // ======================================
+  // AUTHENTICATED USER
+  // ======================================
+
+  const { user } = useContext(AuthContext);
+
+  // Same user structure as existing Navbar.
+  const currentUser = user?.user || user;
+
+  const userName =
+    currentUser?.name ||
+    currentUser?.username ||
+    "User";
+
+  const userInitial =
+    userName.trim().charAt(0).toUpperCase() || "U";
+
+  const avatarUrl = getProfileImageUrl(
+    currentUser?.profilePicture
+  );
+
+  // Store failed URL, not a permanent
+  // boolean. A newly updated profile
+  // picture can load automatically.
+
+  const [
+    failedAvatarUrl,
+    setFailedAvatarUrl,
+  ] = useState("");
+
+  const showAvatarImage =
+    Boolean(avatarUrl) &&
+    failedAvatarUrl !== avatarUrl;
+
+  // ======================================
+  // POST STATE
+  // ======================================
+
   const [content, setContent] = useState("");
 
   // Only one attachment per post:
-  // image OR video
+  // image OR video.
+
   const [mediaFile, setMediaFile] =
     useState(null);
 
@@ -77,14 +161,18 @@ const CreatePost = ({
   const [uploadStage, setUploadStage] =
     useState("");
 
+  // ======================================
+  // INPUT REFS
+  // ======================================
+
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
 
   const previewUrlRef = useRef("");
 
-  // ========================================
+  // ======================================
   // CLEAN UP PREVIEW ON UNMOUNT
-  // ========================================
+  // ======================================
 
   useEffect(() => {
     return () => {
@@ -98,9 +186,9 @@ const CreatePost = ({
     };
   }, []);
 
-  // ========================================
+  // ======================================
   // REMOVE SELECTED MEDIA
-  // ========================================
+  // ======================================
 
   const removeMedia = () => {
     if (previewUrlRef.current) {
@@ -125,9 +213,9 @@ const CreatePost = ({
     }
   };
 
-  // ========================================
+  // ======================================
   // SELECT IMAGE OR VIDEO
-  // ========================================
+  // ======================================
 
   const handleMediaSelect = (
     event,
@@ -135,7 +223,7 @@ const CreatePost = ({
   ) => {
     const file = event.target.files?.[0];
 
-    // Allow the same file to be selected again
+    // Allow same file to be selected again.
     event.target.value = "";
 
     if (!file || loading) return;
@@ -144,7 +232,7 @@ const CreatePost = ({
 
     if (!config) return;
 
-    // Validate MIME type and file extension
+    // Validate MIME type and extension.
     const allowedExtensions =
       config.formats[file.type];
 
@@ -166,15 +254,16 @@ const CreatePost = ({
       return;
     }
 
-    // Empty file validation
+    // Empty file validation.
     if (file.size === 0) {
       toast.error(
         "Cannot upload an empty file."
       );
+
       return;
     }
 
-    // Maximum file size
+    // Maximum file size.
     if (file.size > config.maxSize) {
       toast.error(
         kind === "image"
@@ -185,14 +274,13 @@ const CreatePost = ({
       return;
     }
 
-    // Remove old preview URL
+    // Remove previous preview.
     if (previewUrlRef.current) {
       URL.revokeObjectURL(
         previewUrlRef.current
       );
     }
 
-    // Browser-only preview
     const previewUrl =
       URL.createObjectURL(file);
 
@@ -204,9 +292,9 @@ const CreatePost = ({
     setUploadProgress(0);
   };
 
-  // ========================================
+  // ======================================
   // UPLOAD MEDIA TO BACKEND
-  // ========================================
+  // ======================================
 
   const uploadMedia = async (
     file,
@@ -227,7 +315,7 @@ const CreatePost = ({
     setUploadStage("uploading");
     setUploadProgress(0);
 
-    // Existing secure Upload API
+    // Existing secure Upload API.
     const { data } = await api.post(
       `/uploads/${kind}`,
       formData,
@@ -249,7 +337,7 @@ const CreatePost = ({
 
     const filePath = data?.filePath;
 
-    // Validate response from Upload API
+    // Validate response from Upload API.
     if (
       typeof filePath !== "string" ||
       !config.pathPattern.test(filePath)
@@ -259,22 +347,18 @@ const CreatePost = ({
       );
     }
 
-    // Convert relative path into full URL
-    //
-    // Example:
-    // http://localhost:5001/uploads/video/abc.mp4
-    //
-    // This is a persistent server URL,
-    // not a temporary blob: URL.
+    // Convert relative path into
+    // persistent Backend URL.
+
     return new URL(
       filePath,
       api.defaults.baseURL
     ).href;
   };
 
-  // ========================================
+  // ======================================
   // CREATE POST
-  // ========================================
+  // ======================================
 
   const handleCreatePost = async () => {
     if (loading) return;
@@ -286,6 +370,7 @@ const CreatePost = ({
       toast.error(
         "Write something first"
       );
+
       return;
     }
 
@@ -295,7 +380,7 @@ const CreatePost = ({
       let imageUrl = "";
       let videoUrl = "";
 
-      // Step 1: Upload selected attachment
+      // Step 1: Upload selected attachment.
       if (mediaFile && mediaType) {
         const uploadedUrl =
           await uploadMedia(
@@ -312,7 +397,7 @@ const CreatePost = ({
         }
       }
 
-      // Step 2: Save Post to MongoDB
+      // Step 2: Save Post to MongoDB.
       setUploadStage("posting");
 
       const { data } = await api.post(
@@ -328,16 +413,16 @@ const CreatePost = ({
         "Post created successfully!"
       );
 
-      // Existing instant UI update
+      // Existing instant UI update.
       if (addNewPost) {
         addNewPost(data);
       }
 
-      // Reset form after successful post
+      // Reset after successful post.
       setContent("");
       removeMedia();
 
-      // Existing optional refresh
+      // Existing optional refresh.
       if (fetchPosts) {
         fetchPosts();
       }
@@ -364,9 +449,9 @@ const CreatePost = ({
     }
   };
 
-  // ========================================
+  // ======================================
   // ENTER TO SUBMIT
-  // ========================================
+  // ======================================
 
   const handleKeyDown = (event) => {
     if (
@@ -379,22 +464,53 @@ const CreatePost = ({
     }
   };
 
-  // ========================================
+  // ======================================
   // RENDER
-  // ========================================
+  // ======================================
 
   return (
     <div className="bg-white/3 border border-white/10 backdrop-blur-2xl rounded-2xl p-4 shadow-[0_10px_60px_rgba(0,0,0,0.45)]">
 
       <div className="flex items-start gap-4">
 
-        {/* AVATAR */}
-        <div className="w-12 h-12 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 shrink-0" />
+        {/* ==================================
+            DYNAMIC USER AVATAR
+        ================================== */}
 
-        {/* CONTENT AREA */}
+        <div
+          className="w-12 h-12 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-linear-to-r from-indigo-500 to-purple-500 text-white font-bold text-lg ring-2 ring-white/10"
+          title={userName}
+        >
+
+          {showAvatarImage ? (
+
+            <img
+              src={avatarUrl}
+              alt={`${userName} profile`}
+              className="w-full h-full object-cover"
+              onError={() => {
+                setFailedAvatarUrl(avatarUrl);
+              }}
+            />
+
+          ) : (
+
+            <span>
+              {userInitial}
+            </span>
+
+          )}
+
+        </div>
+
+        {/* ==================================
+            CONTENT AREA
+        ================================== */}
+
         <div className="flex-1 min-w-0 space-y-3">
 
           {/* TEXTAREA */}
+
           <textarea
             value={content}
             onChange={(event) =>
@@ -407,9 +523,13 @@ const CreatePost = ({
             className="w-full bg-[#0B1120] border border-white/10 rounded-2xl p-4 text-white placeholder:text-gray-500 resize-none outline-none focus:border-indigo-500/40 transition-all duration-300 leading-7 disabled:opacity-60"
           />
 
-          {/* IMAGE PREVIEW */}
+          {/* ==================================
+              IMAGE PREVIEW
+          ================================== */}
+
           {mediaType === "image" &&
             mediaPreview && (
+
               <div className="relative">
 
                 <img
@@ -419,6 +539,7 @@ const CreatePost = ({
                 />
 
                 {/* REMOVE IMAGE */}
+
                 <button
                   type="button"
                   onClick={removeMedia}
@@ -436,9 +557,13 @@ const CreatePost = ({
               </div>
             )}
 
-          {/* VIDEO PREVIEW */}
+          {/* ==================================
+              VIDEO PREVIEW
+          ================================== */}
+
           {mediaType === "video" &&
             mediaPreview && (
+
               <div className="relative">
 
                 <video
@@ -453,6 +578,7 @@ const CreatePost = ({
                 </video>
 
                 {/* REMOVE VIDEO */}
+
                 <button
                   type="button"
                   onClick={removeMedia}
@@ -470,12 +596,17 @@ const CreatePost = ({
               </div>
             )}
 
-          {/* UPLOAD PROGRESS */}
+          {/* ==================================
+              UPLOAD PROGRESS
+          ================================== */}
+
           {loading &&
             uploadStage === "uploading" && (
+
               <div className="space-y-2">
 
                 <div className="flex items-center justify-between gap-3 text-xs text-indigo-300">
+
                   <span>
                     Uploading{" "}
                     {mediaType === "video"
@@ -486,6 +617,7 @@ const CreatePost = ({
                   <span>
                     {uploadProgress}%
                   </span>
+
                 </div>
 
                 <div className="w-full h-2 rounded-full overflow-hidden bg-white/10">
@@ -502,13 +634,18 @@ const CreatePost = ({
               </div>
             )}
 
-          {/* BOTTOM ACTIONS */}
+          {/* ==================================
+              BOTTOM ACTIONS
+          ================================== */}
+
           <div className="flex flex-wrap items-center justify-between gap-3">
 
             {/* MEDIA BUTTONS */}
+
             <div className="flex items-center gap-3">
 
               {/* IMAGE BUTTON */}
+
               <label
                 className={`flex items-center gap-2 bg-white/3 border border-white/10 px-3 py-1.5 rounded-xl transition-all duration-300 text-gray-300 ${
                   loading
@@ -538,6 +675,7 @@ const CreatePost = ({
               </label>
 
               {/* VIDEO BUTTON */}
+
               <label
                 className={`flex items-center gap-2 bg-white/3 border border-white/10 px-3 py-1.5 rounded-xl transition-all duration-300 text-gray-300 ${
                   loading
@@ -568,7 +706,10 @@ const CreatePost = ({
 
             </div>
 
-            {/* CREATE POST BUTTON */}
+            {/* ==================================
+                CREATE POST BUTTON
+            ================================== */}
+
             <button
               type="button"
               onClick={handleCreatePost}
@@ -582,7 +723,9 @@ const CreatePost = ({
                   : "bg-linear-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 hover:scale-105"
               }`}
             >
+
               {loading ? (
+
                 <>
                   <FiLoader
                     size={17}
@@ -593,12 +736,16 @@ const CreatePost = ({
                     ? "Uploading..."
                     : "Posting..."}
                 </>
+
               ) : (
+
                 <>
                   <FiSend size={17} />
                   Create Post
                 </>
+
               )}
+
             </button>
 
           </div>

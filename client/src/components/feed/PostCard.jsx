@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 
 import {
@@ -13,13 +14,23 @@ import BookmarkButton from "./BookmarkButton";
 import api from "../../services/api";
 import socket from "../../socket/socket";
 
+// ========================================
+// CURRENT LOGGED-IN USER
+// ========================================
+
 // Get currently logged-in user's ID
 const getCurrentUserId = () => {
   try {
-    const stored = JSON.parse(localStorage.getItem("userInfo") || "null");
+    const stored = JSON.parse(
+      localStorage.getItem("userInfo") || "null"
+    );
 
     return String(
-      stored?.user?._id || stored?._id || stored?.user?.id || stored?.id || "",
+      stored?.user?._id ||
+        stored?._id ||
+        stored?.user?.id ||
+        stored?.id ||
+        ""
     );
   } catch (error) {
     console.error("User info error:", error);
@@ -27,21 +38,117 @@ const getCurrentUserId = () => {
   }
 };
 
+// ========================================
+// REACTION HELPER
+// ========================================
+
 // Check whether a user ID exists in an array
 const hasReaction = (array, userId) => {
   if (!userId || !Array.isArray(array)) {
     return false;
   }
 
-  return array.some((id) => String(id?._id || id) === userId);
+  return array.some(
+    (id) => String(id?._id || id) === userId
+  );
 };
+
+// ========================================
+// AUTHOR PROFILE IMAGE HELPER
+// ========================================
+
+// Supports:
+// 1. Full external image URLs
+// 2. Backend-relative image URLs
+// 3. Missing profile pictures
+
+const getProfileImageUrl = (profilePicture) => {
+  if (
+    typeof profilePicture !== "string" ||
+    !profilePicture.trim()
+  ) {
+    return "";
+  }
+
+  const imagePath = profilePicture.trim();
+
+  // Existing absolute image URL
+  if (/^https?:\/\//i.test(imagePath)) {
+    return imagePath;
+  }
+
+  try {
+    const normalizedPath = imagePath.startsWith("/")
+      ? imagePath
+      : `/${imagePath}`;
+
+    const backendBase = new URL(
+      api.defaults.baseURL || "/",
+      window.location.origin
+    );
+
+    return new URL(
+      normalizedPath,
+      backendBase.origin
+    ).href;
+  } catch {
+    return "";
+  }
+};
+
+// ========================================
+// POST CARD COMPONENT
+// ========================================
 
 const PostCard = ({ post, onBookmarkChange }) => {
   const currentUserId = getCurrentUserId();
 
-  const [openComments, setOpenComments] = useState(false);
+  const [openComments, setOpenComments] =
+    useState(false);
 
+  // ======================================
+  // DYNAMIC POST AUTHOR
+  // ======================================
+
+  // IMPORTANT:
+  // Use the POST AUTHOR, not the
+  // currently logged-in user.
+
+  const author = post?.user;
+
+  const authorName =
+    author?.name ||
+    author?.username ||
+    "Unknown User";
+
+  const authorUsername =
+    author?.username || "anonymous";
+
+  const authorInitial =
+    authorName.trim().charAt(0).toUpperCase() || "U";
+
+  const avatarUrl = getProfileImageUrl(
+    author?.profilePicture
+  );
+
+  // Track failed image URLs.
+  // If the author gets a different
+  // profile picture URL, the new
+  // image can load normally.
+
+  const [
+    failedAvatarUrl,
+    setFailedAvatarUrl,
+  ] = useState("");
+
+  const showAvatarImage =
+    Boolean(avatarUrl) &&
+    failedAvatarUrl !== avatarUrl;
+
+  // ======================================
   // INITIAL REACTION
+  // ======================================
+
   const getInitialReaction = () => {
     if (hasReaction(post?.likes, currentUserId)) {
       return "like";
@@ -54,20 +161,28 @@ const PostCard = ({ post, onBookmarkChange }) => {
     return null;
   };
 
-  const [reaction, setReaction] = useState(getInitialReaction);
+  const [reaction, setReaction] =
+    useState(getInitialReaction);
 
-  const [likesCount, setLikesCount] = useState(post?.likes?.length || 0);
+  const [likesCount, setLikesCount] =
+    useState(post?.likes?.length || 0);
 
-  const [dislikesCount, setDislikesCount] = useState(
-    post?.dislikes?.length || 0,
-  );
+  const [dislikesCount, setDislikesCount] =
+    useState(post?.dislikes?.length || 0);
 
-  const [commentsCount, setCommentsCount] = useState(post?.commentsCount ?? 0);
+  const [commentsCount, setCommentsCount] =
+    useState(post?.commentsCount ?? 0);
 
-  const [reactionLoading, setReactionLoading] = useState(false);
-  const [reactionError, setReactionError] = useState("");
+  const [reactionLoading, setReactionLoading] =
+    useState(false);
 
+  const [reactionError, setReactionError] =
+    useState("");
+
+  // ======================================
   // REALTIME REACTION LISTENER
+  // ======================================
+
   useEffect(() => {
     if (!post?._id) return;
 
@@ -94,11 +209,18 @@ const PostCard = ({ post, onBookmarkChange }) => {
         setDislikesCount(data.dislikesCount);
       }
 
-      // Sync current user's reaction when IDs are available
-      if (Array.isArray(data.likes) && Array.isArray(data.dislikes)) {
+      // Sync current user's reaction
+      // when IDs are available.
+
+      if (
+        Array.isArray(data.likes) &&
+        Array.isArray(data.dislikes)
+      ) {
         if (hasReaction(data.likes, currentUserId)) {
           setReaction("like");
-        } else if (hasReaction(data.dislikes, currentUserId)) {
+        } else if (
+          hasReaction(data.dislikes, currentUserId)
+        ) {
           setReaction("dislike");
         } else {
           setReaction(null);
@@ -110,11 +232,17 @@ const PostCard = ({ post, onBookmarkChange }) => {
 
     return () => {
       socket.off("connect", joinRoom);
-      socket.off("receiveLike", handleReceiveLike);
+      socket.off(
+        "receiveLike",
+        handleReceiveLike
+      );
     };
   }, [post?._id, currentUserId]);
 
+  // ======================================
   // HANDLE LIKE / DISLIKE
+  // ======================================
+
   const handleReaction = async (type) => {
     if (reactionLoading || !post?._id) {
       return;
@@ -124,24 +252,34 @@ const PostCard = ({ post, onBookmarkChange }) => {
     setReactionError("");
 
     try {
-      const { data } = await api.put(`/posts/${post._id}/${type}`);
+      const { data } = await api.put(
+        `/posts/${post._id}/${type}`
+      );
 
       // Update counts
       setLikesCount(data.likesCount);
       setDislikesCount(data.dislikesCount);
 
-      // Calculate selected reaction from backend response
+      // Calculate selected reaction
+      // from backend response.
+
       let newReaction = null;
 
-      if (hasReaction(data.likes, currentUserId)) {
+      if (
+        hasReaction(data.likes, currentUserId)
+      ) {
         newReaction = "like";
-      } else if (hasReaction(data.dislikes, currentUserId)) {
+      } else if (
+        hasReaction(data.dislikes, currentUserId)
+      ) {
         newReaction = "dislike";
       }
 
       setReaction(newReaction);
 
-      // Broadcast reaction counts to other users
+      // Broadcast reaction counts
+      // to other users.
+
       socket.emit("sendLike", {
         postId: post._id,
         likesCount: data.likesCount,
@@ -150,64 +288,136 @@ const PostCard = ({ post, onBookmarkChange }) => {
         dislikes: data.dislikes,
       });
     } catch (error) {
-      console.error("Reaction error:", error);
+      console.error(
+        "Reaction error:",
+        error
+      );
 
-      setReactionError("Unable to update reaction. Please try again.");
+      setReactionError(
+        "Unable to update reaction. Please try again."
+      );
     } finally {
       setReactionLoading(false);
     }
   };
 
+  // ======================================
+  // RENDER
+  // ======================================
+
   return (
     <>
-      {/* POST CARD */}
-      <div className="bg-white/3 border border-white/10 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.45)] hover:border-indigo-500/20 transition-all duration-500">
-        {/* HEADER */}
-        <div className="p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              {/* AVATAR */}
-              <div className="w-14 h-14 rounded-full bg-linear-to-r from-indigo-500 to-purple-500 shadow-lg shrink-0" />
+      {/* ==================================
+          POST CARD
+      ================================== */}
 
-              {/* USER */}
+      <div className="bg-white/3 border border-white/10 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-[0_10px_50px_rgba(0,0,0,0.45)] hover:border-indigo-500/20 transition-all duration-500">
+
+        {/* ==================================
+            POST HEADER
+        ================================== */}
+
+        <div className="p-6">
+
+          <div className="flex items-start justify-between">
+
+            <div className="flex items-center gap-4">
+
+              {/* ==================================
+                  DYNAMIC AUTHOR AVATAR
+              ================================== */}
+
+              <div
+                className="w-14 h-14 rounded-full overflow-hidden bg-linear-to-r from-indigo-500 to-purple-500 shadow-lg shrink-0 flex items-center justify-center text-white font-bold text-xl ring-2 ring-white/10"
+                title={authorName}
+              >
+
+                {showAvatarImage ? (
+
+                  <img
+                    src={avatarUrl}
+                    alt={`${authorName} profile`}
+                    className="w-full h-full object-cover"
+                    onError={() => {
+                      setFailedAvatarUrl(
+                        avatarUrl
+                      );
+                    }}
+                  />
+
+                ) : (
+
+                  <span>
+                    {authorInitial}
+                  </span>
+
+                )}
+
+              </div>
+
+              {/* ==================================
+                  POST AUTHOR INFORMATION
+              ================================== */}
+
               <div>
+
                 <h2 className="text-xl font-semibold text-white leading-none">
-                  {post?.user?.name || "Unknown User"}
+                  {authorName}
                 </h2>
 
                 <p className="text-gray-400 text-sm mt-1">
-                  @{post?.user?.username || "anonymous"}
+                  @{authorUsername}
                 </p>
+
               </div>
+
             </div>
 
-            {/* MORE */}
+            {/* ==================================
+                MORE OPTIONS
+            ================================== */}
+
             <button
               type="button"
               className="text-gray-500 hover:text-white transition-all duration-300"
             >
               <FiMoreHorizontal size={20} />
             </button>
+
           </div>
 
-          {/* CONTENT */}
+          {/* ==================================
+              POST CONTENT
+          ================================== */}
+
           <p className="text-gray-200 text-[16px] leading-7 mt-5 whitespace-pre-wrap">
             {post?.content}
           </p>
+
         </div>
 
-        {/* POST IMAGE */}
+        {/* ==================================
+            POST IMAGE
+        ================================== */}
+
         {post?.image && (
+
           <img
             src={post.image}
             alt="Post attachment"
             className="w-full max-h-125 object-cover"
           />
+
         )}
 
-        {/* POST VIDEO */}
+        {/* ==================================
+            POST VIDEO
+        ================================== */}
+
         {post?.video && (
+
           <div className="w-full bg-black border-t border-white/10">
+
             <video
               key={post.video}
               src={post.video}
@@ -217,18 +427,31 @@ const PostCard = ({ post, onBookmarkChange }) => {
               className="w-full max-h-125 object-contain bg-black"
               aria-label="Post video attachment"
             >
-              Your browser does not support video playback.
+              Your browser does not support
+              video playback.
             </video>
+
           </div>
+
         )}
 
-        {/* BOTTOM ACTIONS */}
+        {/* ==================================
+            BOTTOM ACTIONS
+        ================================== */}
+
         <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between">
+
           <div className="flex items-center gap-5 sm:gap-7">
-            {/* LIKE BUTTON */}
+
+            {/* ==================================
+                LIKE BUTTON
+            ================================== */}
+
             <button
               type="button"
-              onClick={() => handleReaction("like")}
+              onClick={() =>
+                handleReaction("like")
+              }
               disabled={reactionLoading}
               aria-label="Like post"
               aria-pressed={reaction === "like"}
@@ -238,6 +461,7 @@ const PostCard = ({ post, onBookmarkChange }) => {
                   : "text-gray-400 hover:text-red-400"
               }`}
             >
+
               <FiHeart
                 size={21}
                 className={`transition-all duration-300 ${
@@ -247,22 +471,33 @@ const PostCard = ({ post, onBookmarkChange }) => {
                 }`}
               />
 
-              <span className="text-sm font-medium">{likesCount}</span>
+              <span className="text-sm font-medium">
+                {likesCount}
+              </span>
+
             </button>
 
-            {/* DISLIKE BUTTON */}
+            {/* ==================================
+                DISLIKE BUTTON
+            ================================== */}
+
             <button
               type="button"
-              onClick={() => handleReaction("dislike")}
+              onClick={() =>
+                handleReaction("dislike")
+              }
               disabled={reactionLoading}
               aria-label="Dislike post"
-              aria-pressed={reaction === "dislike"}
+              aria-pressed={
+                reaction === "dislike"
+              }
               className={`group flex items-center gap-2 transition-all duration-300 disabled:opacity-60 ${
                 reaction === "dislike"
                   ? "text-purple-400"
                   : "text-gray-400 hover:text-purple-400"
               }`}
             >
+
               <FiThumbsDown
                 size={21}
                 className={`transition-all duration-300 ${
@@ -272,49 +507,85 @@ const PostCard = ({ post, onBookmarkChange }) => {
                 }`}
               />
 
-              <span className="text-sm font-medium">{dislikesCount}</span>
+              <span className="text-sm font-medium">
+                {dislikesCount}
+              </span>
+
             </button>
 
-            {/* COMMENT BUTTON */}
+            {/* ==================================
+                COMMENT BUTTON
+            ================================== */}
+
             <button
               type="button"
-              onClick={() => setOpenComments(true)}
+              onClick={() =>
+                setOpenComments(true)
+              }
               className="flex items-center gap-2 text-gray-400 hover:text-indigo-500 transition-all duration-300"
             >
+
               <FiMessageCircle size={21} />
 
-              <span className="text-sm font-medium">{commentsCount}</span>
+              <span className="text-sm font-medium">
+                {commentsCount}
+              </span>
+
             </button>
 
-            {/* SHARE BUTTON */}
+            {/* ==================================
+                BOOKMARK BUTTON
+            ================================== */}
+
             <BookmarkButton
               postId={post._id}
-              onSavedChange={onBookmarkChange}
+              onSavedChange={
+                onBookmarkChange
+              }
             />
+
           </div>
 
           <p className="hidden md:block text-gray-500 text-xs">
             AI Community Post
           </p>
+
         </div>
 
-        {/* REACTION ERROR */}
+        {/* ==================================
+            REACTION ERROR
+        ================================== */}
+
         {reactionError && (
-          <p role="alert" className="px-6 pb-4 text-red-400 text-sm">
+
+          <p
+            role="alert"
+            className="px-6 pb-4 text-red-400 text-sm"
+          >
             {reactionError}
           </p>
+
         )}
+
       </div>
 
-      {/* COMMENT MODAL */}
+      {/* ==================================
+          COMMENT MODAL
+      ================================== */}
+
       <CommentModal
         post={post}
         isOpen={openComments}
-        onClose={() => setOpenComments(false)}
+        onClose={() =>
+          setOpenComments(false)
+        }
         onCommentAdded={() => {
-          setCommentsCount((prev) => prev + 1);
+          setCommentsCount(
+            (prev) => prev + 1
+          );
         }}
       />
+
     </>
   );
 };
