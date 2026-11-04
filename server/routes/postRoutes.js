@@ -1,23 +1,74 @@
+
 const express = require("express");
 
 const {
   createPost,
   getPosts,
+  updatePost,
   toggleLike,
   toggleDislike,
   getUserPosts,
 } = require("../controllers/postController");
 
-const { protect } = require("../middleware/authMiddleware");
+const {
+  protect,
+} = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.route("/").post(protect, createPost).get(getPosts);
+// ========================================
+// CREATE POST / GET ALL POSTS
+// ========================================
 
-router.put("/:id/like", protect, toggleLike);
+router
+  .route("/")
+  .post(protect, createPost)
+  .get(getPosts);
 
-router.put("/:id/dislike", protect, toggleDislike);
+// ========================================
+// NEW: UPDATE EXISTING POST
+// ========================================
 
-router.get("/user/:id", getUserPosts);
+// PUT /posts/:id
+// Only the post owner can edit.
+
+router.put(
+  "/:id",
+  protect,
+  updatePost
+);
+
+// ========================================
+// LIKE POST
+// ========================================
+
+router.put(
+  "/:id/like",
+  protect,
+  toggleLike
+);
+
+// ========================================
+// DISLIKE POST
+// ========================================
+
+router.put(
+  "/:id/dislike",
+  protect,
+  toggleDislike
+);
+
+// ========================================
+// GET USER POSTS
+// ========================================
+
+router.get(
+  "/user/:id",
+  getUserPosts
+);
+
+// ========================================
+// EXPORT ROUTER
+// ========================================
 
 module.exports = router;

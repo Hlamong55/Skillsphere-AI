@@ -2,7 +2,8 @@
 const Post = require("../models/Post");
 
 // ========================================
-// IMAGE URL VALIDATION
+// IMAGE / VIDEO URL VALIDATION
+// ========================================
 
 const isValidImageUrl = (value) => {
   if (value === "" || value == null) {
@@ -29,9 +30,9 @@ const isValidImageUrl = (value) => {
   }
 };
 
-
 // ========================================
 // CREATE POST
+// ========================================
 
 const createPost = async (req, res) => {
   try {
@@ -68,7 +69,6 @@ const createPost = async (req, res) => {
       });
     }
 
-
     const post = await Post.create({
       user: req.user._id,
       content: content.trim(),
@@ -93,9 +93,9 @@ const createPost = async (req, res) => {
   }
 };
 
-
 // ========================================
 // GET ALL POSTS
+// ========================================
 
 const getPosts = async (req, res) => {
   try {
@@ -128,9 +128,199 @@ const getPosts = async (req, res) => {
   }
 };
 
+// ========================================
+// NEW: UPDATE POST
+// ========================================
+
+// Allows:
+// 1. Text editing
+// 2. Image replacement
+// 3. Video replacement
+// 4. Image/video removal
+//
+// Only the post owner can update it.
+//
+// Intended endpoint:
+// PUT /posts/:id
+
+const updatePost = async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    // ------------------------------------
+    // POST EXISTENCE
+    // ------------------------------------
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found.",
+      });
+    }
+
+    // ------------------------------------
+    // OWNER AUTHORIZATION
+    // ------------------------------------
+
+    const postOwnerId =
+      post.user?._id || post.user;
+
+    const loggedInUserId =
+      req.user?._id;
+
+    if (
+      !loggedInUserId ||
+      String(postOwnerId) !== String(loggedInUserId)
+    ) {
+      return res.status(403).json({
+        message:
+          "You are not authorized to edit this post.",
+      });
+    }
+
+    // ------------------------------------
+    // REQUEST BODY
+    // ------------------------------------
+
+    const body = req.body || {};
+
+    const hasContent =
+      Object.prototype.hasOwnProperty.call(
+        body,
+        "content"
+      );
+
+    const hasImage =
+      Object.prototype.hasOwnProperty.call(
+        body,
+        "image"
+      );
+
+    const hasVideo =
+      Object.prototype.hasOwnProperty.call(
+        body,
+        "video"
+      );
+
+    // At least one editable field required.
+    if (
+      !hasContent &&
+      !hasImage &&
+      !hasVideo
+    ) {
+      return res.status(400).json({
+        message:
+          "Provide content, image, or video to update.",
+      });
+    }
+
+    // ------------------------------------
+    // CONTENT VALIDATION
+    // ------------------------------------
+
+    if (hasContent) {
+      if (
+        typeof body.content !== "string" ||
+        !body.content.trim()
+      ) {
+        return res.status(400).json({
+          message:
+            "Post content cannot be empty.",
+        });
+      }
+    }
+
+    // ------------------------------------
+    // IMAGE VALIDATION
+    // ------------------------------------
+
+    if (hasImage) {
+      if (
+        typeof body.image !== "string" ||
+        !isValidImageUrl(body.image)
+      ) {
+        return res.status(400).json({
+          message: "Invalid image URL.",
+        });
+      }
+    }
+
+    // ------------------------------------
+    // VIDEO VALIDATION
+    // ------------------------------------
+
+    if (hasVideo) {
+      if (
+        typeof body.video !== "string" ||
+        !isValidImageUrl(body.video)
+      ) {
+        return res.status(400).json({
+          message: "Invalid video URL.",
+        });
+      }
+    }
+
+    // ------------------------------------
+    // APPLY VALIDATED CHANGES
+    // ------------------------------------
+
+    // Update content only when provided.
+    if (hasContent) {
+      post.content = body.content.trim();
+    }
+
+    // Empty string removes the image.
+    if (hasImage) {
+      post.image = body.image.trim();
+    }
+
+    // Empty string removes the video.
+    if (hasVideo) {
+      post.video = body.video.trim();
+    }
+
+    // Only content, image and video are
+    // editable. Other fields such as user,
+    // likes and dislikes are untouched.
+
+    // ------------------------------------
+    // SAVE TO MONGODB
+    // ------------------------------------
+
+    await post.save();
+
+    // Return populated author information,
+    // including the dynamic profile picture.
+    await post.populate(
+      "user",
+      "name username profilePicture"
+    );
+
+    return res.status(200).json({
+      message: "Post updated successfully.",
+      post,
+    });
+
+  } catch (error) {
+    console.error(
+      "Update Post Error:",
+      error
+    );
+
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid post ID.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Failed to update post.",
+    });
+  }
+};
 
 // ========================================
 // LIKE POST
+// ========================================
 
 const toggleLike = async (req, res) => {
   try {
@@ -156,7 +346,7 @@ const toggleLike = async (req, res) => {
     } else {
       post.likes.push(userId);
 
-      // Remove dislike if exists
+      // Remove dislike if exists.
       post.dislikes = post.dislikes.filter(
         (id) =>
           id.toString() !== userId.toString()
@@ -182,6 +372,7 @@ const toggleLike = async (req, res) => {
 
 // ========================================
 // DISLIKE POST
+// ========================================
 
 const toggleDislike = async (req, res) => {
   try {
@@ -207,7 +398,7 @@ const toggleDislike = async (req, res) => {
     } else {
       post.dislikes.push(userId);
 
-      // Remove like if exists
+      // Remove like if exists.
       post.likes = post.likes.filter(
         (id) =>
           id.toString() !== userId.toString()
@@ -230,9 +421,9 @@ const toggleDislike = async (req, res) => {
   }
 };
 
-
 // ========================================
 // GET USER POSTS
+// ========================================
 
 const getUserPosts = async (req, res) => {
   try {
@@ -256,9 +447,14 @@ const getUserPosts = async (req, res) => {
   }
 };
 
+// ========================================
+// EXPORT CONTROLLERS
+// ========================================
+
 module.exports = {
   createPost,
   getPosts,
+  updatePost,
   toggleLike,
   toggleDislike,
   getUserPosts,
