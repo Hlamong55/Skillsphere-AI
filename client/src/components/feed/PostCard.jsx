@@ -1,16 +1,22 @@
 
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 
 import {
   FiHeart,
   FiThumbsDown,
   FiMessageCircle,
-  // FiShare2,
   FiMoreHorizontal,
+  FiEdit2,
 } from "react-icons/fi";
 
 import CommentModal from "./CommentModal";
 import BookmarkButton from "./BookmarkButton";
+import EditPostModal from "./EditPostModal";
+
 import api from "../../services/api";
 import socket from "../../socket/socket";
 
@@ -18,7 +24,6 @@ import socket from "../../socket/socket";
 // CURRENT LOGGED-IN USER
 // ========================================
 
-// Get currently logged-in user's ID
 const getCurrentUserId = () => {
   try {
     const stored = JSON.parse(
@@ -42,7 +47,6 @@ const getCurrentUserId = () => {
 // REACTION HELPER
 // ========================================
 
-// Check whether a user ID exists in an array
 const hasReaction = (array, userId) => {
   if (!userId || !Array.isArray(array)) {
     return false;
@@ -57,11 +61,6 @@ const hasReaction = (array, userId) => {
 // AUTHOR PROFILE IMAGE HELPER
 // ========================================
 
-// Supports:
-// 1. Full external image URLs
-// 2. Backend-relative image URLs
-// 3. Missing profile pictures
-
 const getProfileImageUrl = (profilePicture) => {
   if (
     typeof profilePicture !== "string" ||
@@ -72,7 +71,6 @@ const getProfileImageUrl = (profilePicture) => {
 
   const imagePath = profilePicture.trim();
 
-  // Existing absolute image URL
   if (/^https?:\/\//i.test(imagePath)) {
     return imagePath;
   }
@@ -100,21 +98,69 @@ const getProfileImageUrl = (profilePicture) => {
 // POST CARD COMPONENT
 // ========================================
 
-const PostCard = ({ post, onBookmarkChange }) => {
+const PostCard = ({
+  post,
+  onBookmarkChange,
+}) => {
   const currentUserId = getCurrentUserId();
+
+  // ======================================
+  // EXISTING COMMENT STATE
+  // ======================================
 
   const [openComments, setOpenComments] =
     useState(false);
 
   // ======================================
+  // NEW: EDIT POST STATE
+  // ======================================
+
+  const [editMenuOpen, setEditMenuOpen] =
+    useState(false);
+
+  const [editModalOpen, setEditModalOpen] =
+    useState(false);
+
+  // Local updated post data.
+  // Allows immediate UI update
+  // without a full page reload.
+
+  const [editedPost, setEditedPost] =
+    useState(null);
+
+  const editMenuRef = useRef(null);
+
+  // Show locally updated post when
+  // it belongs to the same PostCard.
+
+  const displayPost =
+    editedPost &&
+    String(editedPost._id) === String(post?._id)
+      ? editedPost
+      : post;
+
+  // ======================================
+  // POST OWNER VERIFICATION
+  // ======================================
+
+  const postOwnerId = String(
+    displayPost?.user?._id ||
+      displayPost?.user?.id ||
+      displayPost?.user ||
+      ""
+  );
+
+  const isPostOwner = Boolean(
+    currentUserId &&
+      postOwnerId &&
+      currentUserId === postOwnerId
+  );
+
+  // ======================================
   // DYNAMIC POST AUTHOR
   // ======================================
 
-  // IMPORTANT:
-  // Use the POST AUTHOR, not the
-  // currently logged-in user.
-
-  const author = post?.user;
+  const author = displayPost?.user;
 
   const authorName =
     author?.name ||
@@ -131,11 +177,6 @@ const PostCard = ({ post, onBookmarkChange }) => {
     author?.profilePicture
   );
 
-  // Track failed image URLs.
-  // If the author gets a different
-  // profile picture URL, the new
-  // image can load normally.
-
   const [
     failedAvatarUrl,
     setFailedAvatarUrl,
@@ -144,6 +185,77 @@ const PostCard = ({ post, onBookmarkChange }) => {
   const showAvatarImage =
     Boolean(avatarUrl) &&
     failedAvatarUrl !== avatarUrl;
+
+  // ======================================
+  // NEW: CLOSE EDIT MENU
+  // ======================================
+
+  useEffect(() => {
+    if (!editMenuOpen) return;
+
+    const handleOutsideClick = (event) => {
+      if (
+        editMenuRef.current &&
+        !editMenuRef.current.contains(event.target)
+      ) {
+        setEditMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setEditMenuOpen(false);
+      }
+    };
+
+    document.addEventListener(
+      "pointerdown",
+      handleOutsideClick
+    );
+
+    document.addEventListener(
+      "keydown",
+      handleEscape
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handleOutsideClick
+      );
+
+      document.removeEventListener(
+        "keydown",
+        handleEscape
+      );
+    };
+  }, [editMenuOpen]);
+
+  // ======================================
+  // NEW: OPEN EDIT POST MODAL
+  // ======================================
+
+  const handleOpenEdit = () => {
+    if (!isPostOwner) return;
+
+    setEditMenuOpen(false);
+    setEditModalOpen(true);
+  };
+
+  // ======================================
+  // NEW: HANDLE UPDATED POST
+  // ======================================
+
+  const handlePostUpdated = (updatedPost) => {
+    if (!updatedPost?._id) return;
+
+    // Update this PostCard immediately.
+    setEditedPost(updatedPost);
+
+    // Close Edit Modal after successful save.
+    setEditModalOpen(false);
+    setEditMenuOpen(false);
+  };
 
   // ======================================
   // INITIAL REACTION
@@ -188,12 +300,12 @@ const PostCard = ({ post, onBookmarkChange }) => {
 
     const postId = String(post._id);
 
-    // Join post room for realtime updates
     const joinRoom = () => {
       socket.emit("joinPost", postId);
     };
 
     joinRoom();
+
     socket.on("connect", joinRoom);
 
     const handleReceiveLike = (data) => {
@@ -209,14 +321,13 @@ const PostCard = ({ post, onBookmarkChange }) => {
         setDislikesCount(data.dislikesCount);
       }
 
-      // Sync current user's reaction
-      // when IDs are available.
-
       if (
         Array.isArray(data.likes) &&
         Array.isArray(data.dislikes)
       ) {
-        if (hasReaction(data.likes, currentUserId)) {
+        if (
+          hasReaction(data.likes, currentUserId)
+        ) {
           setReaction("like");
         } else if (
           hasReaction(data.dislikes, currentUserId)
@@ -228,10 +339,14 @@ const PostCard = ({ post, onBookmarkChange }) => {
       }
     };
 
-    socket.on("receiveLike", handleReceiveLike);
+    socket.on(
+      "receiveLike",
+      handleReceiveLike
+    );
 
     return () => {
       socket.off("connect", joinRoom);
+
       socket.off(
         "receiveLike",
         handleReceiveLike
@@ -244,7 +359,10 @@ const PostCard = ({ post, onBookmarkChange }) => {
   // ======================================
 
   const handleReaction = async (type) => {
-    if (reactionLoading || !post?._id) {
+    if (
+      reactionLoading ||
+      !post?._id
+    ) {
       return;
     }
 
@@ -256,12 +374,8 @@ const PostCard = ({ post, onBookmarkChange }) => {
         `/posts/${post._id}/${type}`
       );
 
-      // Update counts
       setLikesCount(data.likesCount);
       setDislikesCount(data.dislikesCount);
-
-      // Calculate selected reaction
-      // from backend response.
 
       let newReaction = null;
 
@@ -277,9 +391,6 @@ const PostCard = ({ post, onBookmarkChange }) => {
 
       setReaction(newReaction);
 
-      // Broadcast reaction counts
-      // to other users.
-
       socket.emit("sendLike", {
         postId: post._id,
         likesCount: data.likesCount,
@@ -287,6 +398,7 @@ const PostCard = ({ post, onBookmarkChange }) => {
         likes: data.likes,
         dislikes: data.dislikes,
       });
+
     } catch (error) {
       console.error(
         "Reaction error:",
@@ -296,6 +408,7 @@ const PostCard = ({ post, onBookmarkChange }) => {
       setReactionError(
         "Unable to update reaction. Please try again."
       );
+
     } finally {
       setReactionLoading(false);
     }
@@ -319,9 +432,9 @@ const PostCard = ({ post, onBookmarkChange }) => {
 
         <div className="p-6">
 
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 min-w-0">
 
               {/* ==================================
                   DYNAMIC AUTHOR AVATAR
@@ -356,16 +469,16 @@ const PostCard = ({ post, onBookmarkChange }) => {
               </div>
 
               {/* ==================================
-                  POST AUTHOR INFORMATION
+                  POST AUTHOR
               ================================== */}
 
-              <div>
+              <div className="min-w-0">
 
-                <h2 className="text-xl font-semibold text-white leading-none">
+                <h2 className="text-xl font-semibold text-white leading-tight truncate">
                   {authorName}
                 </h2>
 
-                <p className="text-gray-400 text-sm mt-1">
+                <p className="text-gray-400 text-sm mt-1 truncate">
                   @{authorUsername}
                 </p>
 
@@ -374,15 +487,71 @@ const PostCard = ({ post, onBookmarkChange }) => {
             </div>
 
             {/* ==================================
-                MORE OPTIONS
+                NEW: OWNER-ONLY EDIT MENU
             ================================== */}
 
-            <button
-              type="button"
-              className="text-gray-500 hover:text-white transition-all duration-300"
-            >
-              <FiMoreHorizontal size={20} />
-            </button>
+            {isPostOwner && (
+
+              <div
+                ref={editMenuRef}
+                className="relative shrink-0"
+              >
+
+                {/* THREE-DOT BUTTON */}
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditMenuOpen(
+                      (previous) => !previous
+                    )
+                  }
+                  aria-label="Post options"
+                  aria-haspopup="menu"
+                  aria-expanded={editMenuOpen}
+                  className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-300 ${
+                    editMenuOpen
+                      ? "bg-indigo-500/15 text-indigo-300"
+                      : "text-gray-500 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <FiMoreHorizontal size={21} />
+                </button>
+
+                {/* ==================================
+                    DROPDOWN OPTIONS
+                ================================== */}
+
+                {editMenuOpen && (
+
+                  <div
+                    role="menu"
+                    aria-label="Post actions"
+                    className="absolute right-0 top-full mt-2 z-30 w-44 rounded-xl border border-white/10 bg-[#111827] p-1.5 shadow-[0_15px_40px_rgba(0,0,0,0.5)]"
+                  >
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleOpenEdit}
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-indigo-500/15 hover:text-indigo-300 transition-all"
+                    >
+
+                      <FiEdit2 size={17} />
+
+                      <span>
+                        Edit Post
+                      </span>
+
+                    </button>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            )}
 
           </div>
 
@@ -391,7 +560,7 @@ const PostCard = ({ post, onBookmarkChange }) => {
           ================================== */}
 
           <p className="text-gray-200 text-[16px] leading-7 mt-5 whitespace-pre-wrap">
-            {post?.content}
+            {displayPost?.content}
           </p>
 
         </div>
@@ -400,10 +569,10 @@ const PostCard = ({ post, onBookmarkChange }) => {
             POST IMAGE
         ================================== */}
 
-        {post?.image && (
+        {displayPost?.image && (
 
           <img
-            src={post.image}
+            src={displayPost.image}
             alt="Post attachment"
             className="w-full max-h-125 object-cover"
           />
@@ -414,13 +583,13 @@ const PostCard = ({ post, onBookmarkChange }) => {
             POST VIDEO
         ================================== */}
 
-        {post?.video && (
+        {displayPost?.video && (
 
           <div className="w-full bg-black border-t border-white/10">
 
             <video
-              key={post.video}
-              src={post.video}
+              key={displayPost.video}
+              src={displayPost.video}
               controls
               playsInline
               preload="metadata"
@@ -488,9 +657,7 @@ const PostCard = ({ post, onBookmarkChange }) => {
               }
               disabled={reactionLoading}
               aria-label="Dislike post"
-              aria-pressed={
-                reaction === "dislike"
-              }
+              aria-pressed={reaction === "dislike"}
               className={`group flex items-center gap-2 transition-all duration-300 disabled:opacity-60 ${
                 reaction === "dislike"
                   ? "text-purple-400"
@@ -538,7 +705,7 @@ const PostCard = ({ post, onBookmarkChange }) => {
             ================================== */}
 
             <BookmarkButton
-              postId={post._id}
+              postId={displayPost._id}
               onSavedChange={
                 onBookmarkChange
               }
@@ -570,21 +737,39 @@ const PostCard = ({ post, onBookmarkChange }) => {
       </div>
 
       {/* ==================================
-          COMMENT MODAL
+          EXISTING COMMENT MODAL
       ================================== */}
 
       <CommentModal
-        post={post}
+        post={displayPost}
         isOpen={openComments}
         onClose={() =>
           setOpenComments(false)
         }
         onCommentAdded={() => {
           setCommentsCount(
-            (prev) => prev + 1
+            (previous) => previous + 1
           );
         }}
       />
+
+      {/* ==================================
+          NEW: EDIT POST MODAL
+      ================================== */}
+
+      {editModalOpen && isPostOwner && (
+
+        <EditPostModal
+          key={displayPost._id}
+          post={displayPost}
+          isOpen={editModalOpen}
+          onClose={() =>
+            setEditModalOpen(false)
+          }
+          onUpdated={handlePostUpdated}
+        />
+
+      )}
 
     </>
   );
