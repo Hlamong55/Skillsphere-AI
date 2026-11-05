@@ -11,11 +11,13 @@ import {
   FiMessageCircle,
   FiMoreHorizontal,
   FiEdit2,
+  FiTrash2,
 } from "react-icons/fi";
 
 import CommentModal from "./CommentModal";
 import BookmarkButton from "./BookmarkButton";
 import EditPostModal from "./EditPostModal";
+import DeletePostModal from "./DeletePostModal";
 
 import api from "../../services/api";
 import socket from "../../socket/socket";
@@ -58,7 +60,7 @@ const hasReaction = (array, userId) => {
 };
 
 // ========================================
-// AUTHOR PROFILE IMAGE HELPER
+// PROFILE IMAGE HELPER
 // ========================================
 
 const getProfileImageUrl = (profilePicture) => {
@@ -101,37 +103,37 @@ const getProfileImageUrl = (profilePicture) => {
 const PostCard = ({
   post,
   onBookmarkChange,
+  onDeleted,
 }) => {
   const currentUserId = getCurrentUserId();
 
-  // ======================================
-  // EXISTING COMMENT STATE
-  // ======================================
 
   const [openComments, setOpenComments] =
     useState(false);
 
-  // ======================================
-  // NEW: EDIT POST STATE
-  // ======================================
-
   const [editMenuOpen, setEditMenuOpen] =
     useState(false);
+
+  const editMenuRef = useRef(null);
 
   const [editModalOpen, setEditModalOpen] =
     useState(false);
 
-  // Local updated post data.
-  // Allows immediate UI update
-  // without a full page reload.
-
   const [editedPost, setEditedPost] =
     useState(null);
 
-  const editMenuRef = useRef(null);
+  const [deleteModalOpen, setDeleteModalOpen] =
+    useState(false);
 
-  // Show locally updated post when
-  // it belongs to the same PostCard.
+  const [isDeleted, setIsDeleted] =
+    useState(false);
+
+  // ======================================
+  // CURRENT DISPLAY POST
+  // ======================================
+
+  // Use updated post data immediately
+  // after a successful edit.
 
   const displayPost =
     editedPost &&
@@ -187,7 +189,7 @@ const PostCard = ({
     failedAvatarUrl !== avatarUrl;
 
   // ======================================
-  // NEW: CLOSE EDIT MENU
+  // CLOSE POST OPTIONS MENU
   // ======================================
 
   useEffect(() => {
@@ -232,7 +234,7 @@ const PostCard = ({
   }, [editMenuOpen]);
 
   // ======================================
-  // NEW: OPEN EDIT POST MODAL
+  // OPEN EDIT MODAL
   // ======================================
 
   const handleOpenEdit = () => {
@@ -243,18 +245,53 @@ const PostCard = ({
   };
 
   // ======================================
-  // NEW: HANDLE UPDATED POST
+  // HANDLE EDIT SUCCESS
   // ======================================
 
   const handlePostUpdated = (updatedPost) => {
     if (!updatedPost?._id) return;
 
-    // Update this PostCard immediately.
     setEditedPost(updatedPost);
 
-    // Close Edit Modal after successful save.
     setEditModalOpen(false);
     setEditMenuOpen(false);
+  };
+
+  // ======================================
+  // NEW: OPEN DELETE MODAL
+  // ======================================
+
+  const handleOpenDelete = () => {
+    if (!isPostOwner) return;
+
+    setEditMenuOpen(false);
+    setDeleteModalOpen(true);
+  };
+
+  // ======================================
+  // NEW: HANDLE DELETE SUCCESS
+  // ======================================
+
+  const handlePostDeleted = (deletedPostId) => {
+    if (
+      String(deletedPostId) !==
+      String(displayPost?._id)
+    ) {
+      return;
+    }
+
+    // Hide this card immediately.
+    setIsDeleted(true);
+
+    // Close all post action dialogs.
+    setDeleteModalOpen(false);
+    setEditModalOpen(false);
+    setEditMenuOpen(false);
+
+    // Optional callback for parent Feed.
+    // Parent integration will be handled
+    // separately if needed.
+    onDeleted?.(deletedPostId);
   };
 
   // ======================================
@@ -415,6 +452,18 @@ const PostCard = ({
   };
 
   // ======================================
+  // HIDE SUCCESSFULLY DELETED POST
+  // ======================================
+
+  // All React Hooks run before this return.
+  // The card disappears immediately
+  // after successful backend deletion.
+
+  if (isDeleted) {
+    return null;
+  }
+
+  // ======================================
   // RENDER
   // ======================================
 
@@ -452,9 +501,7 @@ const PostCard = ({
                     alt={`${authorName} profile`}
                     className="w-full h-full object-cover"
                     onError={() => {
-                      setFailedAvatarUrl(
-                        avatarUrl
-                      );
+                      setFailedAvatarUrl(avatarUrl);
                     }}
                   />
 
@@ -487,7 +534,7 @@ const PostCard = ({
             </div>
 
             {/* ==================================
-                NEW: OWNER-ONLY EDIT MENU
+                OWNER-ONLY POST OPTIONS
             ================================== */}
 
             {isPostOwner && (
@@ -519,7 +566,7 @@ const PostCard = ({
                 </button>
 
                 {/* ==================================
-                    DROPDOWN OPTIONS
+                    POST OPTIONS DROPDOWN
                 ================================== */}
 
                 {editMenuOpen && (
@@ -530,19 +577,38 @@ const PostCard = ({
                     className="absolute right-0 top-full mt-2 z-30 w-44 rounded-xl border border-white/10 bg-[#111827] p-1.5 shadow-[0_15px_40px_rgba(0,0,0,0.5)]"
                   >
 
+                    {/* EDIT POST */}
+
                     <button
                       type="button"
                       role="menuitem"
                       onClick={handleOpenEdit}
                       className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-300 hover:bg-indigo-500/15 hover:text-indigo-300 transition-all"
                     >
-
                       <FiEdit2 size={17} />
 
                       <span>
                         Edit Post
                       </span>
+                    </button>
 
+                    {/* SEPARATOR */}
+
+                    <div className="my-1 border-t border-white/10" />
+
+                    {/* NEW: DELETE POST */}
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleOpenDelete}
+                      className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+                    >
+                      <FiTrash2 size={17} />
+
+                      <span>
+                        Delete Post
+                      </span>
                     </button>
 
                   </div>
@@ -706,9 +772,7 @@ const PostCard = ({
 
             <BookmarkButton
               postId={displayPost._id}
-              onSavedChange={
-                onBookmarkChange
-              }
+              onSavedChange={onBookmarkChange}
             />
 
           </div>
@@ -754,7 +818,7 @@ const PostCard = ({
       />
 
       {/* ==================================
-          NEW: EDIT POST MODAL
+          EXISTING EDIT POST MODAL
       ================================== */}
 
       {editModalOpen && isPostOwner && (
@@ -767,6 +831,23 @@ const PostCard = ({
             setEditModalOpen(false)
           }
           onUpdated={handlePostUpdated}
+        />
+
+      )}
+
+      {/* ==================================
+          NEW: DELETE POST MODAL
+      ================================== */}
+
+      {deleteModalOpen && isPostOwner && (
+
+        <DeletePostModal
+          post={displayPost}
+          isOpen={deleteModalOpen}
+          onClose={() =>
+            setDeleteModalOpen(false)
+          }
+          onDeleted={handlePostDeleted}
         />
 
       )}
