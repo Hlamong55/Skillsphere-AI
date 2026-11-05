@@ -60,7 +60,7 @@ const createPost = async (req, res) => {
     }
 
     // Validate persistent video URL.
-    // Reuse the existing HTTP/HTTPS URL validator.
+    // Reuse existing HTTP/HTTPS URL validator.
     const videoUrl = video ?? "";
 
     if (!isValidImageUrl(videoUrl)) {
@@ -129,7 +129,7 @@ const getPosts = async (req, res) => {
 };
 
 // ========================================
-// NEW: UPDATE POST
+// UPDATE POST
 // ========================================
 
 // Allows:
@@ -140,7 +140,7 @@ const getPosts = async (req, res) => {
 //
 // Only the post owner can update it.
 //
-// Intended endpoint:
+// Endpoint:
 // PUT /posts/:id
 
 const updatePost = async (req, res) => {
@@ -201,7 +201,6 @@ const updatePost = async (req, res) => {
         "video"
       );
 
-    // At least one editable field required.
     if (
       !hasContent &&
       !hasImage &&
@@ -263,24 +262,23 @@ const updatePost = async (req, res) => {
     // APPLY VALIDATED CHANGES
     // ------------------------------------
 
-    // Update content only when provided.
     if (hasContent) {
       post.content = body.content.trim();
     }
 
-    // Empty string removes the image.
+    // Empty string removes image.
     if (hasImage) {
       post.image = body.image.trim();
     }
 
-    // Empty string removes the video.
+    // Empty string removes video.
     if (hasVideo) {
       post.video = body.video.trim();
     }
 
-    // Only content, image and video are
-    // editable. Other fields such as user,
-    // likes and dislikes are untouched.
+    // Only content, image and video
+    // are editable. Other fields remain
+    // unchanged.
 
     // ------------------------------------
     // SAVE TO MONGODB
@@ -288,8 +286,6 @@ const updatePost = async (req, res) => {
 
     await post.save();
 
-    // Return populated author information,
-    // including the dynamic profile picture.
     await post.populate(
       "user",
       "name username profilePicture"
@@ -319,12 +315,126 @@ const updatePost = async (req, res) => {
 };
 
 // ========================================
+// NEW: DELETE POST
+// ========================================
+
+// Owner-only deletion.
+//
+// Intended Endpoint:
+// DELETE /posts/:id
+//
+// Deletes the MongoDB Post document.
+// Does not physically delete uploaded
+// image/video files from storage.
+
+const deletePost = async (req, res) => {
+  try {
+    // ------------------------------------
+    // FIND POST
+    // ------------------------------------
+
+    const post = await Post.findById(
+      req.params.id
+    );
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Post not found.",
+      });
+    }
+
+    // ------------------------------------
+    // VERIFY LOGGED-IN USER
+    // ------------------------------------
+
+    const loggedInUserId =
+      req.user?._id;
+
+    if (!loggedInUserId) {
+      return res.status(401).json({
+        message:
+          "Authentication is required.",
+      });
+    }
+
+    // ------------------------------------
+    // OWNER AUTHORIZATION
+    // ------------------------------------
+
+    const postOwnerId =
+      post.user?._id || post.user;
+
+    const isPostOwner =
+      String(postOwnerId) ===
+      String(loggedInUserId);
+
+    if (!isPostOwner) {
+      return res.status(403).json({
+        message:
+          "You are not authorized to delete this post.",
+      });
+    }
+
+    // ------------------------------------
+    // DELETE FROM MONGODB
+    // ------------------------------------
+
+    // Include both the Post ID and Owner ID
+    // in the deletion condition.
+    //
+    // This ensures the database deletion
+    // itself is restricted to the owner.
+
+    const result = await Post.deleteOne({
+      _id: post._id,
+      user: loggedInUserId,
+    });
+
+    if (result.deletedCount !== 1) {
+      return res.status(404).json({
+        message:
+          "Post not found or already deleted.",
+      });
+    }
+
+    // ------------------------------------
+    // SUCCESS RESPONSE
+    // ------------------------------------
+
+    return res.status(200).json({
+      message:
+        "Post deleted successfully.",
+      postId: String(post._id),
+    });
+
+  } catch (error) {
+    console.error(
+      "Delete Post Error:",
+      error
+    );
+
+    // Invalid MongoDB ObjectId
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Invalid post ID.",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Failed to delete post.",
+    });
+  }
+};
+
+// ========================================
 // LIKE POST
 // ========================================
 
 const toggleLike = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(
+      req.params.id
+    );
 
     if (!post) {
       return res.status(404).json({
@@ -376,7 +486,9 @@ const toggleLike = async (req, res) => {
 
 const toggleDislike = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(
+      req.params.id
+    );
 
     if (!post) {
       return res.status(404).json({
@@ -396,10 +508,17 @@ const toggleDislike = async (req, res) => {
       );
 
     } else {
-      post.dislikes.push(userId);
-
-      // Remove like if exists.
       post.likes = post.likes.filter(
+        (id) =>
+          id.toString() !== userId.toString()
+      );
+    }
+
+    // Keep original dislike toggle logic.
+    if (!alreadyDisliked) {
+      post.dislikes.push(userId);
+    } else {
+      post.dislikes = post.dislikes.filter(
         (id) =>
           id.toString() !== userId.toString()
       );
@@ -455,6 +574,7 @@ module.exports = {
   createPost,
   getPosts,
   updatePost,
+  deletePost,
   toggleLike,
   toggleDislike,
   getUserPosts,

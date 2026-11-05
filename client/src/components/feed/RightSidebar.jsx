@@ -14,7 +14,7 @@ const RightSidebar = () => {
         className=" bg-white/5 border border-white/10 backdrop-blur-xl rounded-2xl p-5 "
       >
         <h2
-          className=" text-white text-lg font-bold mb-5 "
+          className=" text-white text-lg font-bold mb-4 "
         >
           Trending Topics
         </h2>
@@ -24,11 +24,10 @@ const RightSidebar = () => {
           "#MachineLearning",
           "#WebDevelopment",
           "#RealtimeApps",
-          "#TensorFlow",
         ].map((topic, index) => (
           <div
             key={index}
-            className=" py-3 border-b border-white/5 text-gray-300 hover:text-white transition-all duration-300 cursor-pointer "
+            className=" py-2.5 border-b border-white/5 text-gray-300 hover:text-white transition-all duration-300 cursor-pointer "
           >
             {topic}
           </div>

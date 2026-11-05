@@ -5,6 +5,7 @@ const {
   createPost,
   getPosts,
   updatePost,
+  deletePost,
   toggleLike,
   toggleDislike,
   getUserPosts,
@@ -26,7 +27,7 @@ router
   .get(getPosts);
 
 // ========================================
-// NEW: UPDATE EXISTING POST
+// UPDATE EXISTING POST
 // ========================================
 
 // PUT /posts/:id
@@ -36,6 +37,20 @@ router.put(
   "/:id",
   protect,
   updatePost
+);
+
+// ========================================
+// NEW: DELETE EXISTING POST
+// ========================================
+
+// DELETE /posts/:id
+// JWT authentication required.
+// Only the post owner can delete.
+
+router.delete(
+  "/:id",
+  protect,
+  deletePost
 );
 
 // ========================================
