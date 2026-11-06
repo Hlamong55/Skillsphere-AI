@@ -13,6 +13,7 @@ import {
   FiCheck,
   FiChevronRight,
   FiCode,
+  FiCpu,
   FiCompass,
   FiGlobe,
   FiHeart,
@@ -23,6 +24,7 @@ import {
   FiSend,
   FiUsers,
   FiZap,
+  FiCamera,
 } from "react-icons/fi";
 import { AuthContext } from "../context/AuthContext";
 import "./Home.css";
@@ -86,14 +88,14 @@ const features = [
     accent: "violet",
   },
   {
-    icon: FiRadio,
+    icon: FiCpu,
     number: "06",
-    tag: "REAL TIME",
-    title: "Stay in the loop",
+    tag: "AI TOOLS",
+    title: "Explore AI-powered tools",
     description:
-      "See online community members and follow discussions with live comments and reactions.",
-    path: "/feed",
-    action: "See what’s happening",
+      "Try interactive AI experiences, including our TensorFlow Lite gesture-controlled quiz.",
+    path: "/ai-lab",
+    action: "Explore AI Lab",
     accent: "cyan",
   },
 ];
@@ -374,14 +376,771 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="ss-container ss-future" data-ss-reveal>
-        <div className="ss-future-icon"><FiActivity size={23}/></div>
-        <div>
-          <strong>What's coming next</strong>
-          <p>AI Learning Lab · Gesture-powered quiz experiences are on the roadmap.</p>
+      
+{/* ============================================
+    AI LEARNING LAB — EXPERIMENT STUDIO
+    Distinct light theme + AI console
+    Self-contained CSS
+============================================ */}
+
+<section
+  className="ss-container ss-lab-section"
+  aria-labelledby="ss-lab-title"
+>
+  <style>{`
+    .ss-lab-section {
+      margin-top: 24px;
+      margin-bottom: 100px;
+    }
+
+    .ss-lab-studio {
+      background: #f0f1eb;
+      border: 1px solid #dce0d5;
+      border-radius: 26px;
+      padding: clamp(24px, 4vw, 48px);
+      color: #192119;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ss-lab-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 34px;
+    }
+
+    .ss-lab-label {
+      font-size: 11px;
+      letter-spacing: 0.17em;
+      font-weight: 800;
+      color: #58634f;
+    }
+
+    .ss-lab-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #255a38;
+      border: 1px solid #bdd5b9;
+      background: #e0efdc;
+      padding: 8px 13px;
+      border-radius: 100px;
+    }
+
+    .ss-lab-live::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      background: #3eae62;
+      border-radius: 50%;
+      animation: ss-lab-blink 2s ease-in-out infinite;
+    }
+
+    .ss-lab-heading-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .ss-lab-heading {
+      font-size: clamp(30px, 3.6vw, 48px);
+      font-weight: 850;
+      letter-spacing: -0.052em;
+      line-height: 1.12;
+      max-width: 650px;
+      margin: 0;
+      color: #192119;
+    }
+
+    .ss-lab-heading em {
+      font-style: normal;
+      text-decoration: underline;
+      text-decoration-color: #9aca56;
+      text-decoration-thickness: 5px;
+      text-underline-offset: 7px;
+    }
+
+    .ss-lab-intro {
+      max-width: 270px;
+      font-size: 13px;
+      line-height: 1.8;
+      color: #677061;
+      margin: 0;
+    }
+
+    .ss-lab-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    /* =====================================
+       DARK AI DETECTION CONSOLE
+    ===================================== */
+
+    .ss-lab-console {
+      background: #161d1a;
+      border: 1px solid #334236;
+      border-radius: 20px;
+      min-width: 0;
+      overflow: hidden;
+      color: #f1f5ed;
+    }
+
+    .ss-lab-console-head {
+      padding: 15px 19px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #344037;
+    }
+
+    .ss-lab-console-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #d9e3d5;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.09em;
+    }
+
+    .ss-lab-console-title svg {
+      color: #c4f479;
+    }
+
+    .ss-lab-console-head small {
+      font-size: 10px;
+      color: #96ad91;
+      letter-spacing: 0.08em;
+    }
+
+    .ss-lab-camera {
+      position: relative;
+      min-height: 275px;
+      margin: 15px;
+      border: 1px solid #364b3b;
+      border-radius: 12px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background-color: #101713;
+      background-image:
+        linear-gradient(#26352a 1px, transparent 1px),
+        linear-gradient(90deg, #26352a 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .ss-lab-camera::before,
+    .ss-lab-camera::after {
+      content: "";
+      position: absolute;
+      width: 46px;
+      height: 46px;
+      border-color: #b9ec72;
+      border-style: solid;
+      pointer-events: none;
+    }
+
+    .ss-lab-camera::before {
+      top: 17px;
+      left: 17px;
+      border-width: 2px 0 0 2px;
+    }
+
+    .ss-lab-camera::after {
+      right: 17px;
+      bottom: 17px;
+      border-width: 0 2px 2px 0;
+    }
+
+    .ss-lab-camera-label {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      color: #a7c2a1;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+
+    .ss-lab-gesture {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ss-lab-hand {
+      font-size: clamp(68px, 8vw, 98px);
+      line-height: 1.2;
+      display: block;
+      animation: ss-lab-gesture 3.5s ease-in-out infinite;
+      filter: drop-shadow(0 10px 20px #0008);
+    }
+
+    .ss-lab-detected {
+      color: #cefa91;
+      background: #243b2a;
+      border: 1px solid #4b7945;
+      border-radius: 7px;
+      padding: 9px 15px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+    }
+
+    .ss-lab-scan {
+      position: absolute;
+      z-index: 3;
+      left: 6%;
+      right: 6%;
+      height: 2px;
+      top: 15%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #bff873,
+        transparent
+      );
+      box-shadow: 0 0 16px #a4f05d;
+      opacity: 0.8;
+      animation: ss-lab-scan 4s linear infinite;
+      pointer-events: none;
+    }
+
+    .ss-lab-console-bottom {
+      padding: 3px 19px 19px;
+    }
+
+    .ss-lab-progress-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 10px;
+      color: #b5c8ae;
+      margin-bottom: 11px;
+    }
+
+    .ss-lab-progress-head strong {
+      color: #c6f58c;
+      font-size: 10px;
+    }
+
+    .ss-lab-track {
+      height: 5px;
+      border-radius: 20px;
+      background: #334438;
+      overflow: hidden;
+    }
+
+    .ss-lab-track-fill {
+      height: 100%;
+      width: 100%;
+      background: #baf276;
+      transform-origin: left;
+      animation: ss-lab-fill 2s linear infinite;
+    }
+
+    .ss-lab-console-meta {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+      font-size: 10px;
+      color: #92a78e;
+    }
+
+    /* =====================================
+       RIGHT SIDE — WORKFLOW PANEL
+    ===================================== */
+
+    .ss-lab-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .ss-lab-info-top {
+      background: #fff;
+      border: 1px solid #dce0d4;
+      border-radius: 20px;
+      padding: 24px;
+      flex: 1;
+    }
+
+    .ss-lab-info-kicker {
+      color: #7c8575;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+    }
+
+    .ss-lab-info h3 {
+      margin: 12px 0 20px;
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.3;
+      color: #20291d;
+    }
+
+    .ss-lab-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 15px 0;
+      border-top: 1px solid #e7eae3;
+    }
+
+    .ss-lab-step-num {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border: 1px solid #d2dcc8;
+      border-radius: 9px;
+      background: #eff4e9;
+      color: #4e6637;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .ss-lab-step strong {
+      display: block;
+      font-size: 13px;
+      color: #263222;
+      margin-bottom: 4px;
+    }
+
+    .ss-lab-step p {
+      margin: 0;
+      color: #7a8274;
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    .ss-lab-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-radius: 16px;
+      background: #c5ed80;
+      color: #192618;
+      padding: 20px 23px;
+      text-decoration: none;
+      transition:
+        background 0.25s ease,
+        transform 0.25s ease;
+    }
+
+    .ss-lab-cta:hover {
+      background: #b5e56c;
+      transform: translateY(-3px);
+    }
+
+    .ss-lab-cta strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .ss-lab-cta span {
+      display: block;
+      margin-top: 4px;
+      font-size: 11px;
+      color: #516748;
+    }
+
+    .ss-lab-cta svg {
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+    }
+
+    .ss-lab-cta:hover svg {
+      transform: translateX(5px);
+    }
+
+    .ss-lab-preview-note {
+      margin: 18px 0 0;
+      font-size: 10px;
+      color: #858d7e;
+      text-align: center;
+    }
+
+    /* =====================================
+       UNIQUE, SUBTLE ANIMATIONS
+    ===================================== */
+
+    @keyframes ss-lab-blink {
+      0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 #49aa4d44;
+      }
+      50% {
+        opacity: 0.5;
+        box-shadow: 0 0 0 5px #49aa4d16;
+      }
+    }
+
+    @keyframes ss-lab-gesture {
+      0%, 100% {
+        transform: rotate(-5deg) translateY(3px);
+      }
+      50% {
+        transform: rotate(5deg) translateY(-5px);
+      }
+    }
+
+    @keyframes ss-lab-scan {
+      0% {
+        top: 15%;
+        opacity: 0;
+      }
+      15% {
+        opacity: 0.8;
+      }
+      85% {
+        opacity: 0.8;
+      }
+      100% {
+        top: 85%;
+        opacity: 0;
+      }
+    }
+
+    @keyframes ss-lab-fill {
+      0% { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+
+    /* =====================================
+       RESPONSIVE DESIGN
+    ===================================== */
+
+    @media (max-width: 850px) {
+      .ss-lab-main {
+        grid-template-columns: 1fr;
+      }
+
+      .ss-lab-heading-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      .ss-lab-intro {
+        max-width: 520px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .ss-lab-section {
+        margin-bottom: 65px;
+      }
+
+      .ss-lab-studio {
+        padding: 22px 15px;
+        border-radius: 20px;
+      }
+
+      .ss-lab-top {
+        margin-bottom: 25px;
+      }
+
+      .ss-lab-label {
+        font-size: 9px;
+      }
+
+      .ss-lab-heading {
+        font-size: 32px;
+      }
+
+      .ss-lab-heading em {
+        text-decoration-thickness: 3px;
+      }
+
+      .ss-lab-camera {
+        min-height: 225px;
+      }
+
+      .ss-lab-info-top {
+        padding: 20px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ss-lab-section *,
+      .ss-lab-section *::before,
+      .ss-lab-section *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  `}</style>
+
+  <div className="ss-lab-studio">
+
+    {/* SECTION TOP BAR */}
+
+    <div className="ss-lab-top">
+
+      <span className="ss-lab-label">
+        SKILLSPHERE EXPERIMENTS / 001
+      </span>
+
+      <span className="ss-lab-live">
+        NOW LIVE
+      </span>
+
+    </div>
+
+    {/* SECTION INTRO */}
+
+    <div className="ss-lab-heading-row">
+
+      <h2
+        id="ss-lab-title"
+        className="ss-lab-heading"
+      >
+        Learning you can
+        <br />
+        <em>interact with.</em>
+      </h2>
+
+      <p className="ss-lab-intro">
+        No keyboard. No clicking.
+        Just hand gestures and a little
+        curiosity. Meet our interactive
+        AI-powered learning experiment.
+      </p>
+
+    </div>
+
+    {/* MAIN GRID */}
+
+    <div className="ss-lab-main">
+
+      {/* ==================================
+          LEFT — AI DETECTION CONSOLE
+      ================================== */}
+
+      <div className="ss-lab-console">
+
+        <div className="ss-lab-console-head">
+
+          <span className="ss-lab-console-title">
+            <FiCamera size={16} />
+            GESTURE DETECTION
+          </span>
+
+          <small>
+            LITERT.JS
+          </small>
+
         </div>
-        <span className="ss-future-chip">COMING SOON</span>
-      </section>
+
+        {/* CAMERA CONCEPT PREVIEW */}
+
+        <div
+          className="ss-lab-camera"
+          aria-label="Illustration of AI hand gesture recognition"
+        >
+
+          <span
+            className="ss-lab-camera-label"
+            aria-hidden="true"
+          >
+            INPUT / 02
+          </span>
+
+          <div className="ss-lab-gesture">
+
+            <span
+              className="ss-lab-hand"
+              aria-hidden="true"
+            >
+              ✌️
+            </span>
+
+            <span className="ss-lab-detected">
+              DETECTED: OPTION 02
+            </span>
+
+          </div>
+
+          <span
+            className="ss-lab-scan"
+            aria-hidden="true"
+          />
+
+        </div>
+
+        {/* RECOGNITION PROGRESS */}
+
+        <div className="ss-lab-console-bottom">
+
+          <div className="ss-lab-progress-head">
+
+            <span>
+              GESTURE HOLD TIMER
+            </span>
+
+            <strong>
+              2.0 SECOND AUTO-SUBMIT
+            </strong>
+
+          </div>
+
+          <div className="ss-lab-track">
+
+            <div className="ss-lab-track-fill" />
+
+          </div>
+
+          <div className="ss-lab-console-meta">
+
+            <span>
+              4 Answer Gestures + No Hand
+            </span>
+
+            <span>
+              VISUAL DEMO
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* ==================================
+          RIGHT — HOW IT WORKS
+      ================================== */}
+
+      <div className="ss-lab-info">
+
+        <div className="ss-lab-info-top">
+
+          <span className="ss-lab-info-kicker">
+            EXPERIMENT 01 / GESTURE QUIZ
+          </span>
+
+          <h3>
+            A new way to
+            answer questions.
+          </h3>
+
+          <div className="ss-lab-step">
+
+            <span className="ss-lab-step-num">
+              01
+            </span>
+
+            <div>
+              <strong>
+                Enable your camera
+              </strong>
+
+              <p>
+                Allow camera access inside
+                the AI Learning Lab.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="ss-lab-step">
+
+            <span className="ss-lab-step-num">
+              02
+            </span>
+
+            <div>
+              <strong>
+                Show a hand gesture
+              </strong>
+
+              <p>
+                Choose an MCQ answer
+                using gestures 1–4.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="ss-lab-step">
+
+            <span className="ss-lab-step-num">
+              03
+            </span>
+
+            <div>
+              <strong>
+                Let AI submit
+              </strong>
+
+              <p>
+                Hold a recognized gesture
+                for two seconds to submit.
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* CTA */}
+
+        <Link
+          to="/ai-lab"
+          className="ss-lab-cta"
+        >
+
+          <div>
+
+            <strong>
+              Try the AI Learning Lab
+            </strong>
+
+            <span>
+              Explore gesture-powered learning
+            </span>
+
+          </div>
+
+          <FiArrowRight size={23} />
+
+        </Link>
+
+      </div>
+
+    </div>
+
+    <p className="ss-lab-preview-note">
+      Concept preview only — live camera
+      recognition runs inside the AI Lab.
+    </p>
+
+  </div>
+
+</section>
+
 
       <section className="ss-container ss-final-section" data-ss-reveal>
         <div className="ss-final-card">
@@ -396,6 +1155,7 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="ss-footer">
         <div className="ss-container ss-footer-inner">
           <Link to="/" className="ss-footer-brand"><span><FiZap size={19} /></span> SkillSphere <em>AI</em></Link>

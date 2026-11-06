@@ -222,3 +222,398 @@
 @media (prefers-reduced-motion: reduce) {
   .ss-home *, .ss-home *::before, .ss-home *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+/* ============================================================
+   AI LEARNING LAB — DARK EXPERIMENT STUDIO
+   Matches the existing SkillSphere navy / violet / cyan palette.
+   All selectors are scoped to the homepage; other pages stay safe.
+   Keep this section in Home.css (no JSX <style> tag needed).
+============================================================ */
+
+.ss-home .ss-lab-section {
+  --lab-accent: #64deec;
+  --lab-accent-soft: rgba(100, 222, 236, .10);
+  --lab-muted: #9ba6bd;
+  margin-block: 12px 100px;
+}
+
+.ss-home .ss-lab-studio {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(25px, 4vw, 50px);
+  border: 1px solid rgba(174, 185, 214, .17);
+  border-radius: 26px;
+  background: linear-gradient(155deg, #131c30 0%, #101727 72%, #111d2d 100%);
+  color: #f8faff;
+  box-shadow: 0 22px 65px rgba(0, 0, 0, .13);
+}
+
+/* Studio masthead */
+.ss-home .ss-lab-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 35px;
+}
+.ss-home .ss-lab-label {
+  color: #b3a0ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .19em;
+}
+.ss-home .ss-lab-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 13px;
+  border: 1px solid rgba(100, 222, 236, .32);
+  border-radius: 999px;
+  background: rgba(24, 97, 110, .2);
+  color: #95edf5;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+.ss-home .ss-lab-live::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lab-accent);
+  box-shadow: 0 0 0 4px rgba(100, 222, 236, .12);
+  animation: ss-lab-blink 2s ease-in-out infinite;
+}
+
+/* Editorial title — intentionally not a second hero */
+.ss-home .ss-lab-heading-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 26px;
+  margin-bottom: 33px;
+}
+.ss-home .ss-lab-heading {
+  max-width: 690px;
+  margin: 0;
+  color: #f8faff;
+  font-size: clamp(31px, 3.7vw, 49px);
+  font-weight: 820;
+  line-height: 1.13;
+  letter-spacing: -.055em;
+}
+.ss-home .ss-lab-heading em {
+  color: #d3f9fc;
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-color: #64deec;
+  text-decoration-thickness: 4px;
+  text-underline-offset: 7px;
+}
+.ss-home .ss-lab-intro {
+  max-width: 292px;
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: 13px;
+  line-height: 1.85;
+}
+
+/* Two panels with a lab-instrument aesthetic */
+.ss-home .ss-lab-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, .82fr);
+  align-items: stretch;
+  gap: 17px;
+}
+.ss-home .ss-lab-console {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(100, 222, 236, .21);
+  border-radius: 18px;
+  background: #0a1120;
+  color: #eaf8fb;
+}
+.ss-home .ss-lab-console-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 19px;
+  border-bottom: 1px solid rgba(174, 185, 214, .13);
+}
+.ss-home .ss-lab-console-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #d6eff4;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+.ss-home .ss-lab-console-title svg { color: var(--lab-accent); }
+.ss-home .ss-lab-console-head small {
+  color: #8292b0;
+  font-size: 10px;
+  letter-spacing: .1em;
+}
+
+/* Camera illustration (no actual camera is activated here) */
+.ss-home .ss-lab-camera {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 278px;
+  overflow: hidden;
+  margin: 15px;
+  border: 1px solid rgba(100, 222, 236, .22);
+  border-radius: 13px;
+  background-color: #090f1a;
+  background-image:
+    linear-gradient(rgba(100, 222, 236, .055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 222, 236, .055) 1px, transparent 1px);
+  background-size: 29px 29px;
+}
+.ss-home .ss-lab-camera::before,
+.ss-home .ss-lab-camera::after {
+  content: "";
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  border: solid var(--lab-accent);
+  pointer-events: none;
+}
+.ss-home .ss-lab-camera::before {
+  top: 17px;
+  left: 17px;
+  border-width: 2px 0 0 2px;
+}
+.ss-home .ss-lab-camera::after {
+  right: 17px;
+  bottom: 17px;
+  border-width: 0 2px 2px 0;
+}
+.ss-home .ss-lab-camera-label {
+  position: absolute;
+  top: 19px;
+  right: 19px;
+  color: #89a4b7;
+  font-size: 10px;
+  letter-spacing: .1em;
+}
+.ss-home .ss-lab-gesture {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+}
+.ss-home .ss-lab-hand {
+  display: block;
+  font-size: clamp(66px, 8vw, 100px);
+  line-height: 1.2;
+  filter: drop-shadow(0 8px 23px rgba(0, 0, 0, .55));
+  animation: ss-lab-gesture 3.6s ease-in-out infinite;
+}
+.ss-home .ss-lab-detected {
+  padding: 9px 15px;
+  border: 1px solid rgba(100, 222, 236, .33);
+  border-radius: 8px;
+  background: #12313c;
+  color: #a5f3f8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+.ss-home .ss-lab-scan {
+  position: absolute;
+  z-index: 3;
+  top: 15%;
+  left: 6%;
+  right: 6%;
+  height: 2px;
+  opacity: .8;
+  background: linear-gradient(90deg, transparent, #64deec, transparent);
+  box-shadow: 0 0 15px rgba(100, 222, 236, .75);
+  pointer-events: none;
+  animation: ss-lab-scan 4s linear infinite;
+}
+.ss-home .ss-lab-console-bottom { padding: 3px 19px 19px; }
+.ss-home .ss-lab-progress-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 11px;
+  color: #93a6be;
+  font-size: 10px;
+}
+.ss-home .ss-lab-progress-head strong { color: #9beaf2; font-size: 10px; }
+.ss-home .ss-lab-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 50px;
+  background: #293d50;
+}
+.ss-home .ss-lab-track-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #7a8cff, #64deec);
+  transform-origin: left;
+  animation: ss-lab-fill 2s linear infinite;
+}
+.ss-home .ss-lab-console-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  color: #8195ad;
+  font-size: 10px;
+}
+
+/* The right side is a structured checklist, not a hero floating card */
+.ss-home .ss-lab-info {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  min-width: 0;
+}
+.ss-home .ss-lab-info-top {
+  flex: 1;
+  padding: 24px;
+  border: 1px solid rgba(174, 185, 214, .16);
+  border-radius: 18px;
+  background: #192338;
+}
+.ss-home .ss-lab-info-kicker {
+  color: #a99aff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+.ss-home .ss-lab-info h3 {
+  margin: 13px 0 20px;
+  color: #f4f6ff;
+  font-size: 23px;
+  font-weight: 790;
+  letter-spacing: -.04em;
+  line-height: 1.32;
+}
+.ss-home .ss-lab-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 15px 0;
+  border-top: 1px solid rgba(174, 185, 214, .13);
+}
+.ss-home .ss-lab-step-num {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(166, 138, 255, .25);
+  border-radius: 9px;
+  background: rgba(166, 138, 255, .1);
+  color: #baa9ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.ss-home .ss-lab-step strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #e7edfb;
+  font-size: 13px;
+  font-weight: 750;
+}
+.ss-home .ss-lab-step p {
+  margin: 0;
+  color: #94a2bc;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.ss-home .ss-lab-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 20px 23px;
+  border: 1px solid rgba(100, 222, 236, .2);
+  border-radius: 15px;
+  background: #75d9e8;
+  color: #091b27;
+  transition: background .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+.ss-home .ss-lab-cta:hover {
+  transform: translateY(-3px);
+  background: #98ecf4;
+  box-shadow: 0 12px 30px rgba(100, 222, 236, .12);
+}
+.ss-home .ss-lab-cta strong {
+  display: block;
+  color: #091b27;
+  font-size: 15px;
+  font-weight: 850;
+}
+.ss-home .ss-lab-cta span {
+  display: block;
+  margin-top: 5px;
+  color: #285062;
+  font-size: 11px;
+}
+.ss-home .ss-lab-cta svg {
+  flex: none;
+  transition: transform .25s ease;
+}
+.ss-home .ss-lab-cta:hover svg { transform: translateX(5px); }
+.ss-home .ss-lab-preview-note {
+  margin: 18px 0 0;
+  color: #7889a6;
+  font-size: 10px;
+  text-align: center;
+}
+
+/* Modest motion — distinct from the large GSAP hero animations */
+@keyframes ss-lab-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+@keyframes ss-lab-gesture {
+  0%, 100% { transform: rotate(-5deg) translateY(3px); }
+  50% { transform: rotate(5deg) translateY(-5px); }
+}
+@keyframes ss-lab-scan {
+  0% { top: 15%; opacity: 0; }
+  15%, 85% { opacity: .85; }
+  100% { top: 85%; opacity: 0; }
+}
+@keyframes ss-lab-fill {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@media (max-width: 850px) {
+  .ss-home .ss-lab-main { grid-template-columns: 1fr; }
+  .ss-home .ss-lab-heading-row { flex-direction: column; align-items: flex-start; gap: 15px; }
+  .ss-home .ss-lab-intro { max-width: 560px; }
+}
+@media (max-width: 500px) {
+  .ss-home .ss-lab-section { margin-bottom: 64px; }
+  .ss-home .ss-lab-studio { padding: 22px 16px; border-radius: 19px; }
+  .ss-home .ss-lab-top { margin-bottom: 25px; }
+  .ss-home .ss-lab-label { font-size: 9px; }
+  .ss-home .ss-lab-heading { font-size: 32px; }
+  .ss-home .ss-lab-heading em { text-decoration-thickness: 3px; }
+  .ss-home .ss-lab-camera { min-height: 220px; }
+  .ss-home .ss-lab-info-top { padding: 20px; }
+  .ss-home .ss-lab-cta { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-home .ss-lab-section *,
+  .ss-home .ss-lab-section *::before,
+  .ss-home .ss-lab-section *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
