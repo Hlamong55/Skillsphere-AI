@@ -46,7 +46,7 @@ Learning is more effective when people can **share what they know, discover usef
 - **Text, image, and video posts**, including upload validation and previews.
 - **Likes, dislikes, and comments** with real-time Socket.IO updates.
 - **Save/bookmark posts** to revisit useful conversations.
-- **Profiles and social connections**: edit profile details, upload profile pictures, follow/unfollow users, discover suggested members, and search for users.
+- **Profiles and social connections**: edit profile details, follow/unfollow users, suggested members, and search for users.
 - **Online/community presence features** that help participants stay connected.
 
 ### 📚 Learning Resource Hub
@@ -289,9 +289,9 @@ npm run dev
 | Service | URL |
 |---|---|
 | Frontend | `http://localhost:5173` |
-| REST API base | `http://localhost:5002/api` |
-| Backend health/root response | `http://localhost:5002/` |
-| Socket.IO server | `http://localhost:5002` |
+| REST API base | `http://localhost:5001/api` |
+| Backend health/root response | `http://localhost:5001/` |
+| Socket.IO server | `http://localhost:5001` |
 
 ### 5. First-run walkthrough
 
@@ -374,12 +374,6 @@ Events and payloads should be validated server-side before trusting them for sen
 - **Upload checks** for supported media/PDF types and file sizes.
 - **Input validation and error handling** across the main publishing flows.
 
-### Important security distinction
-
-A frontend login modal is **not** a security boundary. Each privileged creation/update/delete API must independently enforce JWT authentication, validation, and resource ownership or permission rules.
-
-For production use, review CORS restrictions, rate limiting, file storage/cleanup, content moderation, session handling, secure deployment, and automated authorization tests.
-
 ---
 
 ## 🧪 Quality Assurance & Verification
@@ -434,8 +428,6 @@ SkillSphere AI is an academic full-stack application and an evolving prototype. 
 - Accessibility improvements and enhanced keyboard/screen-reader interaction.
 - Production deployment, security hardening, monitoring, and CI/CD.
 
-The project intentionally focuses on modern web application functionality; it does not depend on relational ERD tooling or Crystal Reports.
-
 ---
 
 ## 🧑‍💻 Development Workflow
@@ -445,15 +437,6 @@ The project intentionally focuses on modern web application functionality; it do
 3. Use a second account for permission-sensitive features.
 4. Commit changes with a clear, descriptive message.
 
-Example:
-
-```bash
-git add README.md
-git commit -m "docs: add comprehensive SkillSphere AI project README"
-git push origin main
-```
-
-> Use your actual branch name if it is not `main`.
 
 ---
 
@@ -464,13 +447,3 @@ The original repository root `package.json` declares **ISC** as its package lice
 This project was developed for **university coursework and learning**. Frameworks, libraries, model runtimes, and other third-party assets remain subject to their respective licenses.
 
 ---
-
-<div align="center">
-
-### SkillSphere AI
-
-**Learn together. Share what you know. Build what comes next.**
-
-Made for curious minds, builders, and lifelong learners.
-
-</div>
