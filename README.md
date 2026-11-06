@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌐 SkillSphere AI
+# ⚡ SkillSphere AI 🤖 
 
 ### Learn together. Build what's next.
 
@@ -46,7 +46,7 @@ Learning is more effective when people can **share what they know, discover usef
 - **Text, image, and video posts**, including upload validation and previews.
 - **Likes, dislikes, and comments** with real-time Socket.IO updates.
 - **Save/bookmark posts** to revisit useful conversations.
-- **Profiles and social connections**: edit profile details, follow/unfollow users, suggested members, and search for users.
+- **Profiles and social connections**: edit profile details, follow/unfollow users, suggested members, & search users.
 - **Online/community presence features** that help participants stay connected.
 
 ### 📚 Learning Resource Hub
@@ -302,6 +302,7 @@ npm run dev
 5. Open `/ai-lab`, allow camera access, and try the gesture-controlled quiz.
 6. Explore the GraphQL-powered Community Insights page while authenticated.
 
+
 ---
 
 ## 🧭 Main Application Areas
@@ -317,8 +318,6 @@ npm run dev
 | `/ai-lab` | Gesture-controlled MCQ quiz | Camera permission needed for the interactive demo |
 | Community Insights | GraphQL-powered community overview | Authenticated experience |
 | Profiles and search | Member profiles, follow/unfollow, discovery | Depends on the particular action |
-
-**Note:** The last two entries describe features, not guaranteed literal URL paths. Refer to `client/src/App.jsx` for the current authoritative route configuration.
 
 ---
 
@@ -347,7 +346,6 @@ REST endpoints are shown **relative to `/api`**. The list focuses on routes docu
 | `POST` | `/uploads/video` | Upload a supported video |
 | `POST` | `/uploads/pdf` | Upload a supported PDF |
 
-**Additional modules:** Events, profile/following, bookmarks, and GraphQL have their own routes; consult the corresponding server route files to confirm their current method/path combinations rather than relying on an outdated endpoint list.
 
 ### GraphQL
 
