@@ -1,5 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useContext } from "react";
 import { useSearchParams } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+
+import LoginRequiredModal from "../components/common/LoginRequiredModal";
 
 import {
   FiCalendar,
@@ -9,22 +12,21 @@ import {
 } from "react-icons/fi";
 
 import useEvents from "../hooks/useEvents";
-
 import EventList from "../components/events/EventList";
 import EventFilters from "../components/events/EventFilters";
 import EventsDashboard from "../components/events/EventsDashboard";
-
 import CreateEventModal from "../components/events/CreateEventModal";
 import EventDetailsModal from "../components/events/EventDetailsModal";
-
-// NEW MODALS
 import EditEventModal from "../components/events/EditEventModal";
 import DeleteEventModal from "../components/events/DeleteEventModal";
 
 const Events = () => {
-  // ========================================
-  // URL-BASED NAVIGATION
-  // ========================================
+  const { user } = useContext(AuthContext);
+  const currentUser = user?.user || user;
+
+  const isLoggedIn = Boolean(currentUser?._id);
+
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -49,10 +51,6 @@ const Events = () => {
     refreshEvents,
   } = useEvents();
 
-  // ========================================
-  // SEARCH
-  // ========================================
-
   const [search, setSearch] = useState("");
 
   const visibleEvents = useMemo(() => {
@@ -69,22 +67,13 @@ const Events = () => {
     });
   }, [events, search]);
 
-  // ========================================
-  // MODAL STATES
-  // ========================================
-
   const [showCreate, setShowCreate] = useState(false);
 
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  // NEW: EDIT AND DELETE STATES
   const [editingEventId, setEditingEventId] = useState(null);
 
   const [deletingEventId, setDeletingEventId] = useState(null);
-
-  // ========================================
-  // DASHBOARD REFRESH
-  // ========================================
 
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
 
@@ -99,7 +88,6 @@ const Events = () => {
   };
 
   // CREATE EVENT
-
   const handleEventCreated = () => {
     setShowCreate(false);
 
@@ -112,7 +100,6 @@ const Events = () => {
   };
 
   // VIEW EVENT DETAILS
-
   const handleViewEvent = (eventId) => {
     setSelectedEvent(eventId);
   };
@@ -124,13 +111,11 @@ const Events = () => {
   };
 
   // JOIN / LEAVE UPDATE
-
   const handleParticipationUpdated = () => {
     refreshAllEventData();
   };
 
   // EDIT EVENT
-
   const handleEditEvent = (event) => {
     if (!event?._id) return;
 
@@ -150,7 +135,6 @@ const Events = () => {
   };
 
   // DELETE EVENT
-
   const handleDeleteEvent = (event) => {
     if (!event?._id) return;
 
@@ -169,7 +153,18 @@ const Events = () => {
     setDeletingEventId(null);
   };
 
-  // MAIN UI
+  // CREATE EVENT AUTHENTICATION CHECK
+  const handleCreateEventClick = () => {
+    // Guest user
+    if (!isLoggedIn) {
+      setShowLoginRequired(true);
+      return;
+    }
+
+    // Authenticated user
+    setShowLoginRequired(false);
+    setShowCreate(true);
+  };
 
   return (
     <main className="min-h-screen bg-[#0B1120] text-white">
@@ -200,7 +195,7 @@ const Events = () => {
 
           <button
             type="button"
-            onClick={() => setShowCreate(true)}
+            onClick={handleCreateEventClick}
             className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 px-6 py-3 font-semibold text-white hover:opacity-90 transition"
           >
             <FiPlus size={20} />
@@ -305,7 +300,7 @@ const Events = () => {
           CREATE EVENT MODAL
       ==================================== */}
 
-      {showCreate && (
+      {showCreate && isLoggedIn && (
         <CreateEventModal
           onClose={() => setShowCreate(false)}
           onCreated={handleEventCreated}
@@ -347,6 +342,16 @@ const Events = () => {
           onDeleted={handleEventDeleted}
         />
       )}
+
+      {/* ========================================
+          LOGIN REQUIRED MODAL
+      ======================================== */}
+
+      <LoginRequiredModal
+        isOpen={showLoginRequired}
+        onClose={() => setShowLoginRequired(false)}
+        actionName="create an event"
+      />
     </main>
   );
 };

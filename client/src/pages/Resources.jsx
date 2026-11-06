@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   FiBookOpen,
   FiSearch,
@@ -17,6 +16,8 @@ import {
 import toast from "react-hot-toast";
 import api from "../services/api";
 import PdfSourceField from "../components/resources/PdfSourceField";
+import { AuthContext } from "../context/AuthContext";
+import LoginRequiredModal from "../components/common/LoginRequiredModal";
 
 const categories = [
   "All",
@@ -49,9 +50,7 @@ const getYoutubeEmbed = (link) => {
     if (["youtu.be", "www.youtu.be"].includes(url.hostname)) {
       id = url.pathname.split("/")[1];
     } else if (
-      ["youtube.com", "www.youtube.com", "m.youtube.com"].includes(
-        url.hostname
-      )
+      ["youtube.com", "www.youtube.com", "m.youtube.com"].includes(url.hostname)
     ) {
       if (url.pathname === "/watch") {
         id = url.searchParams.get("v");
@@ -84,16 +83,14 @@ const ResourceRating = ({ resource, onRated }) => {
     let cancelled = false;
     const loadRating = async () => {
       try {
-        const { data } = await api.get(
-          `/resources/${resource._id}/my-rating`
-        );
+        const { data } = await api.get(`/resources/${resource._id}/my-rating`);
         if (!cancelled) setMyRating(data.userRating || 0);
       } catch (error) {
         if (!cancelled) {
           setRatingError(
             error.response?.status === 401
               ? "Login to rate."
-              : "Could not load your rating."
+              : "Could not load your rating.",
           );
         }
       } finally {
@@ -101,7 +98,9 @@ const ResourceRating = ({ resource, onRated }) => {
       }
     };
     loadRating();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [resource._id]);
 
   const handleRate = async (value) => {
@@ -172,9 +171,7 @@ const ResourceRating = ({ resource, onRated }) => {
           <span className="font-bold text-white">
             {Number(resource.averageRating || 0).toFixed(1)}
           </span>
-          <span className="text-gray-400">
-            ({resource.ratingsCount || 0})
-          </span>
+          <span className="text-gray-400">({resource.ratingsCount || 0})</span>
         </div>
       </div>
       {ratingError && <p className="text-xs text-amber-400">{ratingError}</p>}
@@ -210,7 +207,9 @@ const ResourcePreview = ({ resource }) => {
             <FiFileText size={33} className="text-blue-300" />
           </div>
           <h4 className="text-blue-100 font-bold">PDF Document</h4>
-          <p className="text-blue-300/70 text-xs">Study Notes & Learning Materials</p>
+          <p className="text-blue-300/70 text-xs">
+            Study Notes & Learning Materials
+          </p>
         </div>
       ) : (
         <div className="w-full h-full bg-linear-to-br from-emerald-950 via-[#123B3C] to-[#0B1120] flex flex-col items-center justify-center gap-3">
@@ -244,7 +243,9 @@ const ResourceCard = ({ resource, onRated }) => {
           </span>
         </div>
         <div className="min-h-18">
-          <h3 className="text-xl font-bold text-white line-clamp-2">{resource.title}</h3>
+          <h3 className="text-xl font-bold text-white line-clamp-2">
+            {resource.title}
+          </h3>
           <p className="text-gray-400 text-sm mt-2 line-clamp-2">
             {resource.description}
           </p>
@@ -310,8 +311,12 @@ const AddResourceModal = ({
       >
         <div className="sticky top-0 z-10 flex items-center justify-between p-6 bg-[#111827] border-b border-white/10">
           <div>
-            <h2 className="text-2xl font-bold text-white">Add Learning Resource</h2>
-            <p className="text-sm text-gray-400 mt-1">Share knowledge with the community.</p>
+            <h2 className="text-2xl font-bold text-white">
+              Add Learning Resource
+            </h2>
+            <p className="text-sm text-gray-400 mt-1">
+              Share knowledge with the community.
+            </p>
           </div>
           <button
             type="button"
@@ -326,7 +331,10 @@ const AddResourceModal = ({
 
         <form onSubmit={onSubmit} className="p-6 space-y-5">
           <div>
-            <label htmlFor="resource-title" className="block text-sm text-gray-300 mb-2">
+            <label
+              htmlFor="resource-title"
+              className="block text-sm text-gray-300 mb-2"
+            >
               Resource Title
             </label>
             <input
@@ -342,7 +350,10 @@ const AddResourceModal = ({
           </div>
 
           <div>
-            <label htmlFor="resource-description" className="block text-sm text-gray-300 mb-2">
+            <label
+              htmlFor="resource-description"
+              className="block text-sm text-gray-300 mb-2"
+            >
               Description
             </label>
             <textarea
@@ -352,7 +363,9 @@ const AddResourceModal = ({
               rows={3}
               disabled={submitting}
               value={form.description}
-              onChange={(event) => updateField("description", event.target.value)}
+              onChange={(event) =>
+                updateField("description", event.target.value)
+              }
               placeholder="Describe what students will learn..."
               className="w-full bg-[#0B1120] border border-white/10 rounded-xl p-3 text-white outline-none focus:border-indigo-500 resize-none disabled:opacity-50"
             />
@@ -360,23 +373,35 @@ const AddResourceModal = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="resource-category" className="block text-sm text-gray-300 mb-2">
+              <label
+                htmlFor="resource-category"
+                className="block text-sm text-gray-300 mb-2"
+              >
                 Category
               </label>
               <select
                 id="resource-category"
                 disabled={submitting}
                 value={form.category}
-                onChange={(event) => updateField("category", event.target.value)}
+                onChange={(event) =>
+                  updateField("category", event.target.value)
+                }
                 className="w-full bg-[#0B1120] border border-white/10 rounded-xl p-3 text-white disabled:opacity-50"
               >
-                {categories.filter((item) => item !== "All").map((item) => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
+                {categories
+                  .filter((item) => item !== "All")
+                  .map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
               </select>
             </div>
             <div>
-              <label htmlFor="resource-type" className="block text-sm text-gray-300 mb-2">
+              <label
+                htmlFor="resource-type"
+                className="block text-sm text-gray-300 mb-2"
+              >
                 Resource Type
               </label>
               <select
@@ -413,7 +438,10 @@ const AddResourceModal = ({
 
           {(form.type !== "pdf" || pdfMode === "url") && (
             <div>
-              <label htmlFor="resource-url" className="block text-sm text-gray-300 mb-2">
+              <label
+                htmlFor="resource-url"
+                className="block text-sm text-gray-300 mb-2"
+              >
                 {form.type === "video"
                   ? "YouTube Video URL"
                   : form.type === "pdf"
@@ -440,7 +468,10 @@ const AddResourceModal = ({
 
           {form.type === "tutorial" && (
             <div>
-              <label htmlFor="resource-content" className="block text-sm text-gray-300 mb-2">
+              <label
+                htmlFor="resource-content"
+                className="block text-sm text-gray-300 mb-2"
+              >
                 Tutorial Content
               </label>
               <textarea
@@ -456,10 +487,15 @@ const AddResourceModal = ({
           )}
 
           {submitting && uploadStage && (
-            <div role="status" className="space-y-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4">
+            <div
+              role="status"
+              className="space-y-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-4"
+            >
               <div className="flex items-center gap-2 text-sm font-medium text-indigo-300">
                 <FiLoader className="animate-spin" />
-                {uploadStage === "uploading" ? "Uploading PDF..." : "Publishing Resource..."}
+                {uploadStage === "uploading"
+                  ? "Uploading PDF..."
+                  : "Publishing Resource..."}
               </div>
               {uploadStage === "uploading" && (
                 <>
@@ -469,7 +505,9 @@ const AddResourceModal = ({
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
-                  <p className="text-right text-xs text-indigo-300">{uploadProgress}%</p>
+                  <p className="text-right text-xs text-indigo-300">
+                    {uploadProgress}%
+                  </p>
                 </>
               )}
             </div>
@@ -481,9 +519,13 @@ const AddResourceModal = ({
             className="w-full flex items-center justify-center gap-2 bg-linear-to-r from-indigo-500 to-purple-600 rounded-xl py-3 text-white font-semibold hover:scale-[1.01] transition-all disabled:opacity-50"
           >
             {submitting ? (
-              <><FiLoader className="animate-spin" /> Publishing...</>
+              <>
+                <FiLoader className="animate-spin" /> Publishing...
+              </>
             ) : (
-              <><FiPlus size={19} /> Publish Resource</>
+              <>
+                <FiPlus size={19} /> Publish Resource
+              </>
             )}
           </button>
         </form>
@@ -493,6 +535,13 @@ const AddResourceModal = ({
 };
 
 const Resources = () => {
+  // ========================================
+  // AUTHENTICATION
+
+  const { user } = useContext(AuthContext);
+  const currentUser = user?.user || user;
+  const isLoggedIn = Boolean(currentUser?._id);
+
   const [resources, setResources] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
@@ -503,6 +552,7 @@ const Resources = () => {
   const [error, setError] = useState("");
   const [reload, setReload] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [pdfMode, setPdfMode] = useState("url");
@@ -562,13 +612,20 @@ const Resources = () => {
               averageRating: data.averageRating,
               ratingsCount: data.ratingsCount,
             }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
   const handleCreate = async (event) => {
     event.preventDefault();
+
+    // Guest cannot submit resources
+    if (!isLoggedIn) {
+      setShowCreate(false);
+      setShowLoginRequired(true);
+      return;
+    }
     if (submitting) return;
 
     if (!form.title.trim() || !form.description.trim()) {
@@ -615,7 +672,7 @@ const Resources = () => {
           onUploadProgress: (progressEvent) => {
             if (!progressEvent.total) return;
             const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
+              (progressEvent.loaded * 100) / progressEvent.total,
             );
             setUploadProgress(Math.min(percent, 100));
           },
@@ -655,13 +712,25 @@ const Resources = () => {
       toast.error(
         error.response?.data?.message ||
           error.message ||
-          "Failed to create resource."
+          "Failed to create resource.",
       );
     } finally {
       setSubmitting(false);
       setUploadStage("");
       setUploadProgress(0);
     }
+  };
+
+  const handleAddResourceClick = () => {
+    // Guest user
+    if (!isLoggedIn) {
+      setShowLoginRequired(true);
+      return;
+    }
+
+    // Authenticated user
+    setShowLoginRequired(false);
+    setShowCreate(true);
   };
 
   return (
@@ -682,7 +751,7 @@ const Resources = () => {
           </div>
           <button
             type="button"
-            onClick={() => setShowCreate(true)}
+            onClick={handleAddResourceClick}
             className="inline-flex items-center justify-center gap-2 bg-linear-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] transition-all rounded-xl px-6 py-3 font-semibold text-white"
           >
             <FiPlus size={20} />
@@ -703,6 +772,7 @@ const Resources = () => {
               className="w-full py-3 bg-transparent outline-none text-white placeholder:text-gray-500"
             />
           </div>
+
           <select
             value={category}
             onChange={(event) => {
@@ -717,6 +787,7 @@ const Resources = () => {
               </option>
             ))}
           </select>
+
           <select
             value={type}
             onChange={(event) => {
@@ -789,7 +860,7 @@ const Resources = () => {
         )}
       </div>
 
-      {showCreate && (
+      {showCreate && isLoggedIn && (
         <AddResourceModal
           form={form}
           setForm={setForm}
@@ -809,6 +880,12 @@ const Resources = () => {
           uploadProgress={uploadProgress}
         />
       )}
+
+      <LoginRequiredModal
+        isOpen={showLoginRequired}
+        onClose={() => setShowLoginRequired(false)}
+        actionName="add a learning resource"
+      />
     </main>
   );
 };
